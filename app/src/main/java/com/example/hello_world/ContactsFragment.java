@@ -1,11 +1,11 @@
 package com.example.hello_world;
 
-import android.Manifest; // 추가
+import android.Manifest;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.util.Log; // 추가
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +16,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.appcompat.widget.SearchView;
 
 import java.util.ArrayList;
 
 public class ContactsFragment extends Fragment {
 
-    private static final String TAG = "ContactsFragment"; // TAG 변수 추가
+    private static final String TAG = "ContactsFragment";
 
     @Nullable
     @Override
@@ -29,6 +30,8 @@ public class ContactsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_contacts, container, false);
 
         ListView listView = view.findViewById(R.id.listView);
+        SearchView searchView = view.findViewById(R.id.searchView);
+
         ArrayList<String> contacts = new ArrayList<>();
 
         // 가상 연락처 데이터 추가
@@ -36,7 +39,7 @@ public class ContactsFragment extends Fragment {
 //        contacts.add("Jane Smith : 234-567-8901");
 //        contacts.add("Alice Johnson : 345-678-9012");
 
-        // 실제 연락처 가져오는 부분을 주석 처리
+
 
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
             String[] projection = new String[]{
@@ -66,6 +69,23 @@ public class ContactsFragment extends Fragment {
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, contacts);
         listView.setAdapter(adapter);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // 사용자가 검색어를 제출할 때 호출됨
+                adapter.getFilter().filter(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // 사용자가 검색어를 입력할 때 호출됨
+                adapter.getFilter().filter(newText);
+                return false;
+            }
+        });
+
 
         return view;
     }
