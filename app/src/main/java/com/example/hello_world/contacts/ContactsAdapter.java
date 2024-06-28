@@ -15,13 +15,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ContactsAdapter extends BaseAdapter implements Filterable {
     private static final int TYPE_HEADER = 0;
     private static final int TYPE_CONTACT = 1;
 
-    private Context context;
-    private List<Object> items;
+    private final Context context;
+    private final List<Object> items;
     private List<Object> filteredItems;
     private ContactFilter contactFilter;
 
@@ -113,7 +114,7 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
                             groupedContacts.put(header, new ArrayList<>());
                         }
                         if (contact.getName().toLowerCase().contains(filterString) || contact.getPhoneNumber().contains(filterString)) {
-                            groupedContacts.get(header).add(contact);
+                            Objects.requireNonNull(groupedContacts.get(header)).add(contact);
                         }
                     }
                 }
@@ -153,8 +154,8 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
     }
 
     public static class Contact {
-        private String name;
-        private String phoneNumber;
+        private final String name;
+        private final String phoneNumber;
 
         public Contact(String name, String phoneNumber) {
             this.name = name;
