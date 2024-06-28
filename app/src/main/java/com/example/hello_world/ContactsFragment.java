@@ -61,6 +61,34 @@ public class ContactsFragment extends Fragment {
         SearchView searchView = view.findViewById(R.id.searchView);
         Button addContactButton = view.findViewById(R.id.addContactButton);
 
+        ArrayList<String> contacts = new ArrayList<>();
+
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+            String[] projection = new String[]{
+                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                    ContactsContract.CommonDataKinds.Phone.NUMBER
+            };
+
+            Cursor cursor = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, projection, null, null, null);
+
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    int nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                    int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+
+                    if (nameIndex != -1 && numberIndex != -1) {
+                        String name = cursor.getString(nameIndex);
+                        String phoneNumber = cursor.getString(numberIndex);
+                        contacts.add(name + " : " + phoneNumber);
+                    } else {
+                        Log.e(TAG, "Column index is -1"); // TAG 변수 사용
+                    }
+                }
+                cursor.close();
+            }
+        }
+
+
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             requestReadContactsPermissionLauncher.launch(Manifest.permission.READ_CONTACTS);
         } else {
