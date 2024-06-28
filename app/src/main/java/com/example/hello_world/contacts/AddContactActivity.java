@@ -1,4 +1,4 @@
-package com.example.hello_world;
+package com.example.hello_world.contacts;
 
 import android.content.ContentProviderOperation;
 import android.content.OperationApplicationException;
@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.hello_world.R;
 
 import java.util.ArrayList;
 
