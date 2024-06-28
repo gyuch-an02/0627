@@ -7,15 +7,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder> {
 
     private List<String> photoList;
+    private FragmentManager fragmentManager;
 
-    public PhotoAdapter(List<String> photoList) {
+    public PhotoAdapter(List<String> photoList, FragmentManager fragmentManager) {
         this.photoList = photoList;
+        this.fragmentManager = fragmentManager;
     }
 
     @NonNull
@@ -29,6 +32,11 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
     public void onBindViewHolder(@NonNull PhotoViewHolder holder, int position) {
         Bitmap bitmap = BitmapFactory.decodeFile(photoList.get(position));
         holder.imageView.setImageBitmap(bitmap);
+
+        holder.imageView.setOnClickListener(v -> {
+            ImageDialogFragment.newInstance(photoList.get(position))
+                    .show(fragmentManager, "image_dialog");
+        });
     }
 
     @Override
