@@ -1,4 +1,4 @@
-package com.example.hello_world.photos;
+package com.example.LifeSync.photos;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.hello_world.R;
+import com.example.LifeSync.R;
 
 import java.util.ArrayList;
 import java.util.List;

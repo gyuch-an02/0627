@@ -1,4 +1,4 @@
-package com.example.hello_world.todos;
+package com.example.LifeSync.todos;
 
 public class ToDoItem {
     private String task;

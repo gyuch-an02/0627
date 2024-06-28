@@ -1,4 +1,4 @@
-package com.example.hello_world.contacts;
+package com.example.LifeSync.contacts;
 
 import android.content.ContentProviderOperation;
 import android.content.OperationApplicationException;
@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.hello_world.R;
+import com.example.LifeSync.R;
 
 import java.util.ArrayList;
 

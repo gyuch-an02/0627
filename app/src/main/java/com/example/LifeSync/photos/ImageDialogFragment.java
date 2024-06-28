@@ -1,4 +1,4 @@
-package com.example.hello_world.photos;
+package com.example.LifeSync.photos;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,7 +14,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.hello_world.R;
+import com.example.LifeSync.R;
 
 import java.io.File;
 import java.util.Date;

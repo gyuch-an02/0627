@@ -1,4 +1,4 @@
-package com.example.hello_world.contacts;
+package com.example.LifeSync.contacts;
 
 import android.Manifest;
 import android.content.Intent;
@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -23,11 +22,10 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.widget.SearchView;
 
-import com.example.hello_world.R;
+import com.example.LifeSync.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 
 public class ContactsFragment extends Fragment {

@@ -1,4 +1,4 @@
-package com.example.hello_world.todos;
+package com.example.LifeSync.todos;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -16,7 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.example.hello_world.R;
+import com.example.LifeSync.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
