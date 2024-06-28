@@ -1,12 +1,12 @@
 package com.example.hello_world.contacts;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,16 +27,15 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ContactsFragment extends Fragment {
 
-    private static final String TAG = "ContactsFragment";
     private ContactsAdapter adapter;
-    private ArrayList<Object> contactsAndHeaders = new ArrayList<>();
+    private final ArrayList<Object> contactsAndHeaders = new ArrayList<>();
 
     private ActivityResultLauncher<Intent> addContactActivityLauncher;
     private ActivityResultLauncher<String> requestReadContactsPermissionLauncher;
-    private ActivityResultLauncher<String> requestWriteContactsPermissionLauncher;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,7 +81,7 @@ public class ContactsFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                // Implement filtering if needed
+                adapter.getFilter().filter(newText);
                 return false;
             }
         });
@@ -92,7 +91,7 @@ public class ContactsFragment extends Fragment {
             addContactActivityLauncher.launch(intent);
         });
 
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
             loadContacts();
         } else {
             requestReadContactsPermissionLauncher.launch(Manifest.permission.READ_CONTACTS);
@@ -103,20 +102,20 @@ public class ContactsFragment extends Fragment {
 
     private void loadContacts() {
         contactsAndHeaders.clear();
-        Cursor cursor = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+        Cursor cursor = requireActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
 
         Map<String, List<ContactsAdapter.Contact>> groupedContacts = new LinkedHashMap<>();
 
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                String name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                String phoneNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                @SuppressLint("Range") String phoneNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                 String initial = getInitialGroup(name);
 
                 if (!groupedContacts.containsKey(initial)) {
                     groupedContacts.put(initial, new ArrayList<>());
                 }
-                groupedContacts.get(initial).add(new ContactsAdapter.Contact(name, phoneNumber));
+                Objects.requireNonNull(groupedContacts.get(initial)).add(new ContactsAdapter.Contact(name, phoneNumber));
             }
             cursor.close();
         }
