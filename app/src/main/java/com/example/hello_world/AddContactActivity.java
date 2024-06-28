@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -33,6 +32,7 @@ public class AddContactActivity extends AppCompatActivity {
             String phone = phoneEditText.getText().toString();
             if (!name.isEmpty() && !phone.isEmpty()) {
                 addContact(name, phone);
+                setResult(RESULT_OK);
                 finish();
             } else {
                 Toast.makeText(AddContactActivity.this, "Please enter both name and phone number", Toast.LENGTH_SHORT).show();
