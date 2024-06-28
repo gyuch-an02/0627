@@ -5,6 +5,8 @@ import android.content.OperationApplicationException;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,6 +29,49 @@ public class AddContactActivity extends AppCompatActivity {
         EditText phoneEditText = findViewById(R.id.editTextPhone);
         Button saveButton = findViewById(R.id.saveButton);
 
+        phoneEditText.addTextChangedListener(new TextWatcher() {
+            private boolean isFormatting;
+            private final StringBuilder builder = new StringBuilder();
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // No action needed
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (isFormatting) {
+                    return;
+                }
+
+                isFormatting = true;
+                builder.setLength(0);
+
+                // Remove all non-digit characters
+                String digits = s.toString().replaceAll("\\D", "");
+                int length = digits.length();
+
+                // Format according to the number of digits
+                for (int i = 0; i < length; i++) {
+                    builder.append(digits.charAt(i));
+                    if (i == 2 || i == 6) {
+                        builder.append('-');
+                    }
+                }
+
+                // Update the text with the new format
+                phoneEditText.setText(builder.toString());
+                phoneEditText.setSelection(builder.length());
+
+                isFormatting = false;
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // No action needed
+            }
+        });
+
         saveButton.setOnClickListener(v -> {
             String name = nameEditText.getText().toString();
             String phone = phoneEditText.getText().toString();
@@ -35,7 +80,7 @@ public class AddContactActivity extends AppCompatActivity {
                 setResult(RESULT_OK);
                 finish();
             } else {
-                Toast.makeText(AddContactActivity.this, "Please enter both name and phone number", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AddContactActivity.this, "이름과 전화번호를 입력해주세요", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -64,7 +109,7 @@ public class AddContactActivity extends AppCompatActivity {
         try {
             getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
             Log.d(TAG, "Contact added: " + displayName + " : " + phoneNumber);
-            Toast.makeText(this, "Contact added", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "연락처가 추가되었습니다", Toast.LENGTH_SHORT).show();
         } catch (RemoteException | OperationApplicationException e) {
             Log.e(TAG, "Error adding contact", e);
             Toast.makeText(this, "Failed to add contact", Toast.LENGTH_SHORT).show();
