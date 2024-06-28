@@ -26,6 +26,8 @@ import androidx.appcompat.widget.SearchView;
 import com.example.hello_world.R;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class ContactsFragment extends Fragment {
 
@@ -135,6 +137,15 @@ public class ContactsFragment extends Fragment {
                 }
             }
             cursor.close();
+
+            // 가나다순으로 정렬
+            Collections.sort(contacts, new Comparator<String>() {
+                @Override
+                public int compare(String contact1, String contact2) {
+                    return contact1.compareTo(contact2);
+                }
+            });
+
             adapter.notifyDataSetChanged();
         }
     }
