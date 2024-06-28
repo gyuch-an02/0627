@@ -1,4 +1,4 @@
-package com.example.hello_world;
+package com.example.hello_world.todos;
 
 import android.content.Context;
 import android.content.SharedPreferences;

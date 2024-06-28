@@ -24,6 +24,7 @@ import androidx.fragment.app.Fragment;
 import androidx.appcompat.widget.SearchView;
 
 import com.example.hello_world.R;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,7 +78,7 @@ public class ContactsFragment extends Fragment {
 
         ListView listView = view.findViewById(R.id.listView);
         SearchView searchView = view.findViewById(R.id.searchView);
-        Button addContactButton = view.findViewById(R.id.addContactButton);
+        FloatingActionButton addContactButton = view.findViewById(R.id.addContactButton);
 
         adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, contacts);
         listView.setAdapter(adapter);

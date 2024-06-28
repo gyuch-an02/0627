@@ -1,4 +1,4 @@
-package com.example.hello_world;
+package com.example.hello_world.todos;
 
 public class ToDoItem {
     private String task;

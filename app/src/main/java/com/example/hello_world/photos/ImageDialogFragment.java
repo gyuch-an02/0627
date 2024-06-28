@@ -1,4 +1,4 @@
-package com.example.hello_world;
+package com.example.hello_world.photos;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,6 +13,9 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.hello_world.R;
+
 import java.io.File;
 import java.util.Date;
 

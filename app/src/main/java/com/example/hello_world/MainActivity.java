@@ -19,6 +19,8 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.hello_world.contacts.ContactsFragment;
+import com.example.hello_world.photos.PhotosFragment;
+import com.example.hello_world.todos.ToDoFragment;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 

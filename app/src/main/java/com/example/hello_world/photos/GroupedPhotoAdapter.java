@@ -1,4 +1,4 @@
-package com.example.hello_world;
+package com.example.hello_world.photos;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,6 +10,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.hello_world.R;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

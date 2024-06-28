@@ -1,4 +1,4 @@
-package com.example.hello_world;
+package com.example.hello_world.photos;
 
 public class PhotoItem {
     public static final int TYPE_HEADER = 0;

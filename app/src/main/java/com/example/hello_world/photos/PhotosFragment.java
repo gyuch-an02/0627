@@ -1,4 +1,4 @@
-package com.example.hello_world;
+package com.example.hello_world.photos;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -16,6 +16,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import com.example.hello_world.R;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;

@@ -24,7 +24,7 @@
                 android:id="@+id/emptyTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="No to-do items for this date"
+                android:text="@string/empty_todo"
                 android:visibility="gone"
                 android:textAlignment="center"
                 android:layout_marginBottom="8dp"/>
@@ -43,5 +43,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
+        android:contentDescription="@string/todo_description"
         android:src="@android:drawable/ic_input_add"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
