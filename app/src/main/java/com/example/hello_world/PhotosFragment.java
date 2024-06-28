@@ -38,7 +38,7 @@ public class PhotosFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerView);
 
         // Use GridLayoutManager
-        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 3); // 3 columns
+        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 4); // 4 columns
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
