@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -59,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
                     tab.setText("사진");
                     break;
                 case 2:
-                    tab.setText("Tab3");
+                    tab.setText("Todo");
                     break;
             }
         }).attach();
@@ -92,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static class MyPagerAdapter extends FragmentStateAdapter {
-        private final String[] tabTitles = new String[]{"연락처", "사진", "Tab3"};
+        private final String[] tabTitles = new String[]{"연락처", "사진", "Todo"};
 
         MyPagerAdapter(AppCompatActivity activity) {
             super(activity);
@@ -107,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
                 case 1:
                     return new PhotosFragment();
                 case 2:
-                    return new Tab3Fragment();
+                    return new ToDoFragment();
                 default:
                     throw new IllegalArgumentException("Invalid position");
             }
