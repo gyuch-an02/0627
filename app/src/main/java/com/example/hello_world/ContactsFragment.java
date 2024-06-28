@@ -31,13 +31,6 @@ public class ContactsFragment extends Fragment {
         ListView listView = view.findViewById(R.id.listView);
         ArrayList<String> contacts = new ArrayList<>();
 
-        // 가상 연락처 데이터 추가
-//        contacts.add("John Doe : 123-456-7890");
-//        contacts.add("Jane Smith : 234-567-8901");
-//        contacts.add("Alice Johnson : 345-678-9012");
-
-        // 실제 연락처 가져오는 부분을 주석 처리
-
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
             String[] projection = new String[]{
                     ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,

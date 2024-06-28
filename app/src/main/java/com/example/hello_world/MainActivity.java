@@ -2,11 +2,13 @@ package com.example.hello_world;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -20,9 +22,16 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+@RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 public class MainActivity extends AppCompatActivity {
-    private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
+    private static final int MULTIPLE_PERMISSIONS = 100;
 
+    private final String[] PERMISSIONS = {
+        Manifest.permission.READ_CONTACTS,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    };
+
+    @RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,9 +44,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // 권한 요청
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, PERMISSIONS_REQUEST_READ_CONTACTS);
-        }
+        requestPermissions();
 
         ViewPager2 viewPager = findViewById(R.id.viewpager);
         viewPager.setAdapter(new MyPagerAdapter(this));
@@ -58,15 +65,30 @@ public class MainActivity extends AppCompatActivity {
         }).attach();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == PERMISSIONS_REQUEST_READ_CONTACTS) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission granted to read contacts", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Permission denied to read contacts", Toast.LENGTH_SHORT).show();
+
+    private void requestPermissions() {
+        boolean permissionsNeeded = false;
+        for (String permission : PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded = true;
+                break;
             }
         }
+        if (permissionsNeeded) {
+            ActivityCompat.requestPermissions(this, PERMISSIONS, MULTIPLE_PERMISSIONS);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        if (requestCode == MULTIPLE_PERMISSIONS) {
+//            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                Toast.makeText(this, "Permission granted to read contacts", Toast.LENGTH_SHORT).show();
+//            } else {
+//                Toast.makeText(this, "Permission denied to read contacts", Toast.LENGTH_SHORT).show();
+//            }
+//        }
     }
 
     private static class MyPagerAdapter extends FragmentStateAdapter {
