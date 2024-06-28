@@ -55,10 +55,10 @@ public class ContactsFragment extends Fragment {
                     }
                 });
 
-        requestWriteContactsPermissionLauncher =
-                registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                    // Handle the result if needed
-                });
+//        requestWriteContactsPermissionLauncher =
+//                registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+//                    // Handle the result if needed
+//                });
     }
 
     @Nullable
