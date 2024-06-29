@@ -1,26 +1,27 @@
 package com.example.LifeSync.photos;
 
 import android.Manifest;
-import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
-import android.app.DatePickerDialog;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.LifeSync.R;
 
@@ -41,6 +42,10 @@ public class PhotosFragment extends Fragment {
     private Calendar startDate, endDate;
 
     private Button todayButton, last7DaysButton, last30DaysButton, allButton;
+    private ImageButton searchButton;
+    private LinearLayout dateRangeLayout;
+    private EditText startDateEditText, endDateEditText;
+    private Button confirmButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -67,7 +72,11 @@ public class PhotosFragment extends Fragment {
         last7DaysButton = view.findViewById(R.id.last7DaysButton);
         last30DaysButton = view.findViewById(R.id.last30DaysButton);
         allButton = view.findViewById(R.id.allButton);
-        ImageButton searchButton = view.findViewById(R.id.searchButton);
+        searchButton = view.findViewById(R.id.searchButton);
+        dateRangeLayout = view.findViewById(R.id.dateRangeLayout);
+        startDateEditText = view.findViewById(R.id.startDateEditText);
+        endDateEditText = view.findViewById(R.id.endDateEditText);
+        confirmButton = view.findViewById(R.id.confirmButton);
 
         todayButton.setOnClickListener(v -> {
             filterByToday();
@@ -85,7 +94,24 @@ public class PhotosFragment extends Fragment {
             groupedPhotoAdapter.updateData(groupedPhotos);
             setButtonColors(allButton);
         });
-        searchButton.setOnClickListener(v -> showDateRangeDialog()); //람다 표현
+        searchButton.setOnClickListener(v -> toggleDateRangeLayout());
+
+        startDateEditText.setOnClickListener(v -> showDatePickerDialog(startDateEditText, true));
+        endDateEditText.setOnClickListener(v -> showDatePickerDialog(endDateEditText, false));
+        confirmButton.setOnClickListener(v -> {
+            String startDateString = startDateEditText.getText().toString();
+            String endDateString = endDateEditText.getText().toString();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            try {
+                Date startDate = sdf.parse(startDateString);
+                Date endDate = sdf.parse(endDateString);
+                filterByDateRange(startDate, endDate);
+                dateRangeLayout.setVisibility(View.GONE);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
 
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -95,9 +121,18 @@ public class PhotosFragment extends Fragment {
             loadPhotos();
         }
 
+        // 기본 전체 버튼 검정
         setButtonColors(allButton);
 
         return view;
+    }
+
+    private void toggleDateRangeLayout() {
+        if (dateRangeLayout.getVisibility() == View.GONE) {
+            dateRangeLayout.setVisibility(View.VISIBLE);
+        } else {
+            dateRangeLayout.setVisibility(View.GONE);
+        }
     }
 
     private void setButtonColors(Button activeButton) {
@@ -110,6 +145,7 @@ public class PhotosFragment extends Fragment {
         // 선택된 버튼을 검정색으로 설정
         activeButton.setTextColor(ContextCompat.getColor(getContext(), android.R.color.black));
     }
+
     private void filterByToday() {
         Calendar today = Calendar.getInstance();
         today.set(Calendar.HOUR_OF_DAY, 0);
@@ -131,41 +167,6 @@ public class PhotosFragment extends Fragment {
         Calendar last30Days = Calendar.getInstance();
         last30Days.add(Calendar.DAY_OF_YEAR, -30);
         filterByDateRange(last30Days.getTime(), today.getTime());
-    }
-
-
-    private void showDateRangeDialog() {
-        LayoutInflater inflater = LayoutInflater.from(getContext());
-        View dateRangeView = inflater.inflate(R.layout.dialog_date_range_picker, null);
-
-        EditText startDateEditText = dateRangeView.findViewById(R.id.startDateEditText);
-        EditText endDateEditText = dateRangeView.findViewById(R.id.endDateEditText);
-
-        startDateEditText.setOnClickListener(v -> showDatePickerDialog(startDateEditText, true));
-        endDateEditText.setOnClickListener(v -> showDatePickerDialog(endDateEditText, false));
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setView(dateRangeView)
-                .setTitle("검색 필터")
-                .setPositiveButton("확인", (dialog, which) -> {
-                    String startDateString = startDateEditText.getText().toString();
-                    String endDateString = endDateEditText.getText().toString();
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
-                    try {
-                        Date startDate = sdf.parse(startDateString);
-                        Date endDate = sdf.parse(endDateString);
-                        filterByDateRange(startDate, endDate);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                })
-                .setNegativeButton("취소", null)
-                .setNeutralButton("초기화", (dialog, which) -> {
-                    groupedPhotoAdapter.updateData(groupedPhotos);
-                })
-                .create()
-                .show();
     }
 
     private void showDatePickerDialog(EditText editText, boolean isStartDate) {
@@ -206,7 +207,6 @@ public class PhotosFragment extends Fragment {
 
         groupedPhotoAdapter.updateData(filteredPhotos);
     }
-
 
     private void loadPhotos() {
         Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
