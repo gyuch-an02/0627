@@ -343,29 +343,16 @@ public class ContactActivity extends AppCompatActivity {
 
         // Update profile image if a new one is set
         if (profileImageBitmap != null) {
-            try {
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                profileImageBitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream); // Compress to reduce size
-                byte[] imageBytes = stream.toByteArray();
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            profileImageBitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream); // Compress to reduce size
+            byte[] imageBytes = stream.toByteArray();
 
-                String wherePhoto = ContactsContract.Data.CONTACT_ID + " = ? AND " +
-                        ContactsContract.Data.MIMETYPE + " = ?";
-                String[] photoParams = new String[]{String.valueOf(contactId), ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE};
-
-                // Delete old photo if exists
-                ops.add(ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(wherePhoto, photoParams)
-                        .build());
-
-                // Insert new photo
-                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
-                        .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, imageBytes)
-                        .build());
-            } catch (Exception e) {
-                Log.e(TAG, "Error modifying profile image: " + e.getMessage());
-            }
+            String[] photoParams = new String[]{String.valueOf(contactId), ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE};
+            ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                    .withSelection(where, photoParams)
+                    .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, imageBytes)
+                    .build());
         }
 
         try {
