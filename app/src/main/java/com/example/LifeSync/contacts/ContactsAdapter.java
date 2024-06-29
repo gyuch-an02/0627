@@ -1,4 +1,4 @@
-package com.example.hello_world.contacts;
+package com.example.LifeSync.contacts;
 
 import android.content.Context;
 import android.widget.BaseAdapter;
@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.hello_world.R;
+import com.example.LifeSync.R;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

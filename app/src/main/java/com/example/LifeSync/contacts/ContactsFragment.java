@@ -97,12 +97,13 @@ public class ContactsFragment extends Fragment {
             loadContacts();
         } else {
             requestReadContactsPermissionLauncher.launch(Manifest.permission.READ_CONTACTS);
+
         }
 
         return view;
     }
 
-    private void loadContacts() {
+    public void loadContacts() {
         contactsAndHeaders.clear();
         Cursor cursor = requireActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
 

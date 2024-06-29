@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -71,12 +72,14 @@ public class MainActivity extends AppCompatActivity {
     private void requestPermissions() {
         boolean permissionsNeeded = false;
         for (String permission : PERMISSIONS) {
+            // 사용자가 permission 허용하지 않았다면
             if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
                 permissionsNeeded = true;
                 break;
             }
         }
         if (permissionsNeeded) {
+            //permission 허용 요청 다이얼로그 표시
             ActivityCompat.requestPermissions(this, PERMISSIONS, MULTIPLE_PERMISSIONS);
         }
     }
@@ -84,13 +87,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        if (requestCode == MULTIPLE_PERMISSIONS) {
-//            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                Toast.makeText(this, "Permission granted to read contacts", Toast.LENGTH_SHORT).show();
-//            } else {
-//                Toast.makeText(this, "Permission denied to read contacts", Toast.LENGTH_SHORT).show();
-//            }
-//        }
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Fragment fragment = getSupportFragmentManager().findFragmentByTag("f0");
+            if (fragment instanceof ContactsFragment) {
+                ((ContactsFragment) fragment).loadContacts();
+            }
+        }
     }
 
     private static class MyPagerAdapter extends FragmentStateAdapter {
