@@ -1,8 +1,14 @@
-// ToDoFragment.java
 package com.example.LifeSync.todos;
 
+import android.Manifest;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +18,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.LinearLayout;
 import android.widget.CheckBox;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -30,16 +39,19 @@ import java.util.Locale;
 
 public class ToDoFragment extends Fragment {
 
+    private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
     private CalendarView calendarView;
     private LinearLayout todoContainer;
     private FloatingActionButton addTodoButton;
     private TextView emptyTextView;
     private TextView textTodo;
     private TextView textDiary;
-    private EditText diaryEditText;
+    private AutoCompleteTextView diaryEditText;
     private ArrayList<ToDoItem> toDoList;
     private String selectedDate;
     private Boolean isTodoEmpty;
+    private ArrayList<String> contacts;
+    private ArrayAdapter<String> adapter;
 
     @Nullable
     @Override
@@ -56,6 +68,9 @@ public class ToDoFragment extends Fragment {
         isTodoEmpty = Boolean.TRUE;
 
         toDoList = new ArrayList<>();
+        contacts = new ArrayList<>();
+        adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, contacts);
+        diaryEditText.setAdapter(adapter);
 
         selectedDate = getCurrentDate();
         loadToDoList(selectedDate);
@@ -69,6 +84,23 @@ public class ToDoFragment extends Fragment {
         addTodoButton.setOnClickListener(v -> showAddToDoDialog());
 
         setUpToggle();
+        requestContactsPermission();
+
+        diaryEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0 && start < s.length() && s.charAt(start) == '@') {
+                    diaryEditText.showDropDown();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+        });
+
 
         return view;
     }
@@ -242,4 +274,58 @@ public class ToDoFragment extends Fragment {
             }
         });
     }
+
+    private void requestContactsPermission() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(),
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    PERMISSIONS_REQUEST_READ_CONTACTS);
+        } else {
+            loadContacts();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSIONS_REQUEST_READ_CONTACTS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                loadContacts();
+            }
+        }
+    }
+
+    private void loadContacts() {
+        contacts.clear(); // 기존 연락처 목록을 초기화합니다.
+
+        ContentResolver contentResolver = requireContext().getContentResolver();
+        Cursor cursor = contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                null,
+                null,
+                null,
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC"
+        );
+
+        if (cursor != null) {
+            try {
+                int nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                int phoneIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+
+                if (nameIndex != -1 && phoneIndex != -1) {
+                    while (cursor.moveToNext()) {
+                        String name = cursor.getString(nameIndex);
+                        String phoneNumber = cursor.getString(phoneIndex);
+                        contacts.add(name + " (" + phoneNumber + ")");
+                    }
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+
+
+        adapter.notifyDataSetChanged(); // 어댑터에 데이터 변경을 알립니다.
+    }
+
 }
