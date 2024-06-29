@@ -341,18 +341,45 @@ public class ContactActivity extends AppCompatActivity {
                 .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, phoneNumber)
                 .build());
 
-        // Update profile image if a new one is set
+        // Check if the profile image exists
+        boolean hasProfileImage = false;
+        ContentResolver contentResolver = getContentResolver();
+        Cursor photoCursor = contentResolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                new String[]{ContactsContract.CommonDataKinds.Photo.PHOTO},
+                ContactsContract.Data.CONTACT_ID + " = ? AND " +
+                        ContactsContract.Data.MIMETYPE + " = ?",
+                new String[]{String.valueOf(contactId), ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE},
+                null);
+
+        if (photoCursor != null) {
+            hasProfileImage = photoCursor.moveToFirst() && photoCursor.getBlob(0) != null;
+            photoCursor.close();
+        }
+
+        // Update or insert profile image if a new one is set
         if (profileImageBitmap != null) {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             profileImageBitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream); // Compress to reduce size
             byte[] imageBytes = stream.toByteArray();
 
-            String[] photoParams = new String[]{String.valueOf(contactId), ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE};
-            ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                    .withSelection(where, photoParams)
-                    .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, imageBytes)
-                    .build());
+            if (hasProfileImage) {
+                // Update existing profile image
+                String photoWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " +
+                        ContactsContract.Data.MIMETYPE + " = ?";
+                String[] photoParams = new String[]{String.valueOf(contactId), ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE};
+                ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(photoWhere, photoParams)
+                        .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, imageBytes)
+                        .build());
+            } else {
+                // Insert new profile image
+                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValue(ContactsContract.Data.RAW_CONTACT_ID, contactId)
+                        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+                        .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, imageBytes)
+                        .build());
+            }
         }
 
         try {
@@ -365,4 +392,6 @@ public class ContactActivity extends AppCompatActivity {
             Toast.makeText(this, "Error updating contact", Toast.LENGTH_SHORT).show();
         }
     }
+
+
 }
