@@ -4,4 +4,7 @@
     <string name="enlarged_image">Enlarged image</string>
     <string name="empty_todo">No to-do items for this date</string>
     <string name="todo_description">TODO</string>
+    <string name="todo_label">To-do</string>
+    <string name="diary_label">Diary</string>
+    <string name="diary_placeholder">Write your diary here</string>
 </resources>
