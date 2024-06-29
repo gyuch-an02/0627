@@ -2,6 +2,7 @@ package com.example.LifeSync.todos;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -14,6 +15,7 @@ public class SharedPreferencesHelper {
     private static final String PREFS_NAME = "todo_prefs";
     private static final String TODO_LIST_KEY = "todo_list_";
     private static final String DIARY_KEY = "diary_";
+    private static final String TAG = "SharedPreferencesHelper";
 
     // Save the to-do list for a specific date
     public static void saveToDoList(Context context, String date, ArrayList<ToDoItem> toDoList) {
@@ -21,6 +23,7 @@ public class SharedPreferencesHelper {
         SharedPreferences.Editor editor = prefs.edit();
         Gson gson = new Gson();
         String json = gson.toJson(toDoList);
+        Log.d(TAG, "Saving to-do list: " + json);
         editor.putString(TODO_LIST_KEY + date, json);
         editor.apply();
     }
@@ -30,6 +33,7 @@ public class SharedPreferencesHelper {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = prefs.getString(TODO_LIST_KEY + date, null);
+        Log.d(TAG, "Loading to-do list: " + json);
         Type type = new TypeToken<ArrayList<ToDoItem>>() {}.getType();
         return json == null ? new ArrayList<>() : gson.fromJson(json, type);
     }
@@ -38,6 +42,7 @@ public class SharedPreferencesHelper {
     public static void saveDiaryContent(Context context, String date, String diaryContent) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
+        Log.d(TAG, "Saving diary content: " + diaryContent);
         editor.putString(DIARY_KEY + date, diaryContent);
         editor.apply();
     }
@@ -45,6 +50,8 @@ public class SharedPreferencesHelper {
     // Load the diary content for a specific date
     public static String loadDiaryContent(Context context, String date) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getString(DIARY_KEY + date, "");
+        String diaryContent = prefs.getString(DIARY_KEY + date, "");
+        Log.d(TAG, "Loading diary content: " + diaryContent);
+        return diaryContent;
     }
 }
