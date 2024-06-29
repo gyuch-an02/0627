@@ -5,8 +5,11 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.view.LayoutInflater;
@@ -20,7 +23,6 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 import com.example.LifeSync.R;
 
 import java.util.ArrayList;
@@ -90,7 +92,7 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         } else {
             TextView nameTextView = convertView.findViewById(R.id.nameTextView);
             TextView phoneTextView = convertView.findViewById(R.id.phoneTextView);
-            ImageView profileImageView = convertView.findViewById(R.id.profileImageView);
+            ImageView profileImageView = convertView.findViewById(R.id.item_profile_image);
 
             Contact contact = (Contact) filteredItems.get(position);
             nameTextView.setText(contact.getName());
@@ -98,10 +100,10 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
 
             // Load profile image or set default
             if (contact.getProfileImage() != null) {
-                Drawable roundedImage = new BitmapDrawable(context.getResources(), contact.getProfileImage());
-                profileImageView.setImageDrawable(roundedImage);
+                profileImageView.setImageBitmap(getRoundedBitmap(contact.getProfileImage()));
             } else {
-                profileImageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_default_profile));
+                Bitmap defaultProfileImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_default_profile);
+                profileImageView.setImageBitmap(getRoundedBitmap(defaultProfileImage));
             }
 
             convertView.setOnLongClickListener(v -> {
@@ -109,9 +111,9 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
                 return true;
             });
 
-            convertView.setOnClickListener(v -> {
-                contactActionListener.onContactAction(contact);
-            });
+//            convertView.setOnClickListener(v -> {
+//                contactActionListener.onContactAction(contact);
+//            });
         }
 
         return convertView;
@@ -183,6 +185,31 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         } else {
             return "#";
         }
+    }
+
+    private Bitmap getRoundedBitmap(Bitmap bitmap) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int radius = Math.min(width, height) / 2;
+
+        Bitmap output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        final Paint paint = new Paint();
+        paint.setAntiAlias(true);
+
+        final Rect rect = new Rect(0, 0, width, height);
+        final RectF rectF = new RectF(rect);
+        float roundPx = radius;
+
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(0xFF000000);
+        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+
+        paint.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+
+        return output;
     }
 
     @Override
@@ -271,10 +298,6 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
 
         public Bitmap getProfileImage() {
             return profileImage;
-        }
-
-        public void setProfileImage(Bitmap profileImage) {
-            this.profileImage = profileImage;
         }
     }
 }

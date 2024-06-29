@@ -6,6 +6,11 @@ import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -22,7 +27,6 @@ import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.ContentResolver;
 import android.database.Cursor;
-import android.graphics.BitmapFactory;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -61,6 +65,10 @@ public class ContactActivity extends AppCompatActivity {
         phoneEditText = findViewById(R.id.editTextPhone);
         saveButton = findViewById(R.id.saveButton);
         profileImageView = findViewById(R.id.profile_image);
+
+        // Set default profile image as rounded
+        Bitmap defaultProfileImage = BitmapFactory.decodeResource(getResources(), R.drawable.ic_default_profile);
+        profileImageView.setImageBitmap(getRoundedBitmap(defaultProfileImage));
 
         phoneEditText.addTextChangedListener(new TextWatcher() {
             private boolean isFormatting;
@@ -151,7 +159,7 @@ public class ContactActivity extends AppCompatActivity {
             try {
                 profileImageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
                 profileImageBitmap = resizeBitmap(profileImageBitmap, 200, 200); // Resize to reduce the size
-                profileImageView.setImageBitmap(profileImageBitmap);
+                profileImageView.setImageBitmap(getRoundedBitmap(profileImageBitmap));
             } catch (IOException e) {
                 e.printStackTrace();
                 Log.e(TAG, "Error loading image: " + e.getMessage());
@@ -161,6 +169,31 @@ public class ContactActivity extends AppCompatActivity {
 
     private Bitmap resizeBitmap(Bitmap original, int width, int height) {
         return Bitmap.createScaledBitmap(original, width, height, true);
+    }
+
+    private Bitmap getRoundedBitmap(Bitmap bitmap) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int radius = Math.min(width, height) / 2;
+
+        Bitmap output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        final Paint paint = new Paint();
+        paint.setAntiAlias(true);
+
+        final Rect rect = new Rect(0, 0, width, height);
+        final RectF rectF = new RectF(rect);
+        float roundPx = radius;
+
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(0xFF000000);
+        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+
+        paint.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+
+        return output;
     }
 
     @Override
@@ -227,7 +260,7 @@ public class ContactActivity extends AppCompatActivity {
                             byte[] photoBytes = photoCursor.getBlob(0);
                             if (photoBytes != null) {
                                 profileImageBitmap = BitmapFactory.decodeByteArray(photoBytes, 0, photoBytes.length);
-                                profileImageView.setImageBitmap(profileImageBitmap);
+                                profileImageView.setImageBitmap(getRoundedBitmap(profileImageBitmap));
                             }
                         }
                         photoCursor.close();
@@ -308,17 +341,31 @@ public class ContactActivity extends AppCompatActivity {
                 .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, phoneNumber)
                 .build());
 
-        // Update profile image
+        // Update profile image if a new one is set
         if (profileImageBitmap != null) {
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            profileImageBitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream); // Compress to reduce size
-            byte[] imageBytes = stream.toByteArray();
+            try {
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                profileImageBitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream); // Compress to reduce size
+                byte[] imageBytes = stream.toByteArray();
 
-            String[] photoParams = new String[]{String.valueOf(contactId), ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE};
-            ops.add(ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                    .withSelection(where, photoParams)
-                    .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, imageBytes)
-                    .build());
+                String wherePhoto = ContactsContract.Data.CONTACT_ID + " = ? AND " +
+                        ContactsContract.Data.MIMETYPE + " = ?";
+                String[] photoParams = new String[]{String.valueOf(contactId), ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE};
+
+                // Delete old photo if exists
+                ops.add(ContentProviderOperation.newDelete(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(wherePhoto, photoParams)
+                        .build());
+
+                // Insert new photo
+                ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                        .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
+                        .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, imageBytes)
+                        .build());
+            } catch (Exception e) {
+                Log.e(TAG, "Error modifying profile image: " + e.getMessage());
+            }
         }
 
         try {

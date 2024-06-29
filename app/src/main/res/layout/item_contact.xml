@@ -4,33 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:baselineAligned="false"
     android:orientation="horizontal"
     android:padding="8dp">
 
-    <RelativeLayout
-        android:layout_marginTop="0dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@drawable/rounded_image">
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/info_user_cardView"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            app:cardCornerRadius="20dp">
-
-            <ImageView
-                android:id="@+id/profileImageView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_default_profile"/>
-        </androidx.cardview.widget.CardView>
-    </RelativeLayout>
+    <ImageView
+        android:id="@+id/item_profile_image"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="10dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_default_profile"/>
 
     <LinearLayout
         android:layout_width="0dp"
