@@ -9,7 +9,7 @@
         android:id="@+id/startDateEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Start Date"
+        android:hint="시작 날짜"
         android:focusable="false"
         android:clickable="true" />
 
@@ -17,7 +17,7 @@
         android:id="@+id/endDateEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="End Date"
+        android:hint="종료 날짜"
         android:focusable="false"
         android:clickable="true" />
 </LinearLayout>
