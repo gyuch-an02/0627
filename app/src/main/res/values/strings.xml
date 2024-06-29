@@ -4,4 +4,5 @@
     <string name="enlarged_image">Enlarged image</string>
     <string name="empty_todo">No to-do items for this date</string>
     <string name="todo_description">TODO</string>
+    <string name="filter_by_date">filter_by_date</string>
 </resources>
