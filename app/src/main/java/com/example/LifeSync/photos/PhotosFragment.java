@@ -40,6 +40,8 @@ public class PhotosFragment extends Fragment {
     private LinkedHashMap<String, List<String>> groupedPhotos;
     private Calendar startDate, endDate;
 
+    private Button todayButton, last7DaysButton, last30DaysButton, allButton;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -61,16 +63,28 @@ public class PhotosFragment extends Fragment {
         groupedPhotoAdapter = new GroupedPhotoAdapter(groupedPhotos, getChildFragmentManager());
         recyclerView.setAdapter(groupedPhotoAdapter);
 
-        Button todayButton = view.findViewById(R.id.todayButton);
-        Button last7DaysButton = view.findViewById(R.id.last7DaysButton);
-        Button last30DaysButton = view.findViewById(R.id.last30DaysButton);
-        Button allButton = view.findViewById(R.id.allButton);
+        todayButton = view.findViewById(R.id.todayButton);
+        last7DaysButton = view.findViewById(R.id.last7DaysButton);
+        last30DaysButton = view.findViewById(R.id.last30DaysButton);
+        allButton = view.findViewById(R.id.allButton);
         ImageButton searchButton = view.findViewById(R.id.searchButton);
 
-        todayButton.setOnClickListener(v -> filterByToday());
-        last7DaysButton.setOnClickListener(v -> filterByLast7Days());
-        last30DaysButton.setOnClickListener(v -> filterByLast30Days());
-        allButton.setOnClickListener(v -> groupedPhotoAdapter.updateData(groupedPhotos));
+        todayButton.setOnClickListener(v -> {
+            filterByToday();
+            setButtonColors(todayButton);
+        });
+        last7DaysButton.setOnClickListener(v -> {
+            filterByLast7Days();
+            setButtonColors(last7DaysButton);
+        });
+        last30DaysButton.setOnClickListener(v -> {
+            filterByLast30Days();
+            setButtonColors(last30DaysButton);
+        });
+        allButton.setOnClickListener(v -> {
+            groupedPhotoAdapter.updateData(groupedPhotos);
+            setButtonColors(allButton);
+        });
         searchButton.setOnClickListener(v -> showDateRangeDialog()); //람다 표현
 
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -81,9 +95,21 @@ public class PhotosFragment extends Fragment {
             loadPhotos();
         }
 
+        setButtonColors(allButton);
+
         return view;
     }
 
+    private void setButtonColors(Button activeButton) {
+        // 모든 버튼을 회색으로 설정
+        todayButton.setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
+        last7DaysButton.setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
+        last30DaysButton.setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
+        allButton.setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
+
+        // 선택된 버튼을 검정색으로 설정
+        activeButton.setTextColor(ContextCompat.getColor(getContext(), android.R.color.black));
+    }
     private void filterByToday() {
         Calendar today = Calendar.getInstance();
         today.set(Calendar.HOUR_OF_DAY, 0);
