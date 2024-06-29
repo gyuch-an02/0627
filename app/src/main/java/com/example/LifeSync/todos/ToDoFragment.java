@@ -232,16 +232,13 @@ public class ToDoFragment extends Fragment {
     }
 
     private void sortToDoList() {
-        Collections.sort(toDoList, new Comparator<ToDoItem>() {
-            @Override
-            public int compare(ToDoItem o1, ToDoItem o2) {
-                if (o1.isDone() == o2.isDone()) {
-                    // If both items are either done or not done, sort by timestamp (newer first)
-                    return Long.compare(o2.getTimestamp(), o1.getTimestamp());
-                } else {
-                    // Otherwise, sort by done status (not done items first)
-                    return Boolean.compare(o1.isDone(), o2.isDone());
-                }
+        toDoList.sort((o1, o2) -> {
+            if (o1.isDone() == o2.isDone()) {
+                // If both items are either done or not done, sort by timestamp (newer first)
+                return Long.compare(o2.getTimestamp(), o1.getTimestamp());
+            } else {
+                // Otherwise, sort by done status (not done items first)
+                return Boolean.compare(o1.isDone(), o2.isDone());
             }
         });
     }
