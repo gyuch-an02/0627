@@ -3,6 +3,10 @@ package com.example.LifeSync.contacts;
 import android.content.ContentUris;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.view.LayoutInflater;
@@ -11,11 +15,12 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
-
+import androidx.core.content.ContextCompat;
 import com.example.LifeSync.R;
 
 import java.util.ArrayList;
@@ -85,9 +90,19 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         } else {
             TextView nameTextView = convertView.findViewById(R.id.nameTextView);
             TextView phoneTextView = convertView.findViewById(R.id.phoneTextView);
+            ImageView profileImageView = convertView.findViewById(R.id.profileImageView);
+
             Contact contact = (Contact) filteredItems.get(position);
             nameTextView.setText(contact.getName());
             phoneTextView.setText(contact.getPhoneNumber());
+
+            // Load profile image or set default
+            if (contact.getProfileImage() != null) {
+                Drawable roundedImage = new BitmapDrawable(context.getResources(), contact.getProfileImage());
+                profileImageView.setImageDrawable(roundedImage);
+            } else {
+                profileImageView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_default_profile));
+            }
 
             convertView.setOnLongClickListener(v -> {
                 showPopupMenu(v, contact);
@@ -233,11 +248,13 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         private final long id;
         private final String name;
         private final String phoneNumber;
+        private Bitmap profileImage;
 
-        public Contact(long id, String name, String phoneNumber) {
+        public Contact(long id, String name, String phoneNumber, Bitmap profileImage) {
             this.id = id;
             this.name = name;
             this.phoneNumber = phoneNumber;
+            this.profileImage = profileImage;
         }
 
         public long getId() {
@@ -250,6 +267,14 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
 
         public String getPhoneNumber() {
             return phoneNumber;
+        }
+
+        public Bitmap getProfileImage() {
+            return profileImage;
+        }
+
+        public void setProfileImage(Bitmap profileImage) {
+            this.profileImage = profileImage;
         }
     }
 }
