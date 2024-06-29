@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.hello_world"
+    namespace = "com.example.LifeSync"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.hello_world"
+        applicationId = "com.example.LifeSync"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -38,7 +38,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
-    implementation("com.google.code.gson:gson:2.8.8")
+    implementation(libs.gson)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

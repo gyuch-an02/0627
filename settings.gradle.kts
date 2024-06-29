@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "hello_world"
+rootProject.name = "LifeSync"
 include(":app")
