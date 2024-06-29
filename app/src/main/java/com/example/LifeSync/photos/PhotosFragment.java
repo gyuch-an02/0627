@@ -16,13 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 import android.app.DatePickerDialog;
-import android.widget.DatePicker;
 
 import com.example.LifeSync.R;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,7 +38,6 @@ public class PhotosFragment extends Fragment {
     private RecyclerView recyclerView;
     private GroupedPhotoAdapter groupedPhotoAdapter;
     private LinkedHashMap<String, List<String>> groupedPhotos;
-    private FloatingActionButton fab;
     private Calendar startDate, endDate;
 
     @Override
@@ -62,8 +61,17 @@ public class PhotosFragment extends Fragment {
         groupedPhotoAdapter = new GroupedPhotoAdapter(groupedPhotos, getChildFragmentManager());
         recyclerView.setAdapter(groupedPhotoAdapter);
 
-        fab = view.findViewById(R.id.fab);
-        fab.setOnClickListener(v -> showDateRangeDialog()); //람다 표현식
+        Button todayButton = view.findViewById(R.id.todayButton);
+        Button last7DaysButton = view.findViewById(R.id.last7DaysButton);
+        Button last30DaysButton = view.findViewById(R.id.last30DaysButton);
+        Button allButton = view.findViewById(R.id.allButton);
+        ImageButton searchButton = view.findViewById(R.id.searchButton);
+
+        todayButton.setOnClickListener(v -> filterByToday());
+        last7DaysButton.setOnClickListener(v -> filterByLast7Days());
+        last30DaysButton.setOnClickListener(v -> filterByLast30Days());
+        allButton.setOnClickListener(v -> groupedPhotoAdapter.updateData(groupedPhotos));
+        searchButton.setOnClickListener(v -> showDateRangeDialog()); //람다 표현
 
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -75,6 +83,30 @@ public class PhotosFragment extends Fragment {
 
         return view;
     }
+
+    private void filterByToday() {
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+        filterByDateRange(today.getTime(), today.getTime());
+    }
+
+    private void filterByLast7Days() {
+        Calendar today = Calendar.getInstance();
+        Calendar last7Days = Calendar.getInstance();
+        last7Days.add(Calendar.DAY_OF_YEAR, -7);
+        filterByDateRange(last7Days.getTime(), today.getTime());
+    }
+
+    private void filterByLast30Days() {
+        Calendar today = Calendar.getInstance();
+        Calendar last30Days = Calendar.getInstance();
+        last30Days.add(Calendar.DAY_OF_YEAR, -30);
+        filterByDateRange(last30Days.getTime(), today.getTime());
+    }
+
 
     private void showDateRangeDialog() {
         LayoutInflater inflater = LayoutInflater.from(getContext());
