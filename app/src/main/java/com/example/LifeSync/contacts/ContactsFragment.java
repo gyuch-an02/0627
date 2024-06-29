@@ -10,7 +10,6 @@ import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -25,7 +24,6 @@ import com.example.LifeSync.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +35,7 @@ public class ContactsFragment extends Fragment {
     private final ArrayList<Object> contactsAndHeaders = new ArrayList<>();
 
     private ActivityResultLauncher<Intent> addContactActivityLauncher;
+    private ActivityResultLauncher<Intent> modifyContactActivityLauncher;
     private ActivityResultLauncher<String> requestReadContactsPermissionLauncher;
 
     @Override
@@ -50,17 +49,19 @@ public class ContactsFragment extends Fragment {
                     }
                 });
 
+        modifyContactActivityLauncher =
+                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                    if (result.getResultCode() == AppCompatActivity.RESULT_OK) {
+                        loadContacts();
+                    }
+                });
+
         requestReadContactsPermissionLauncher =
                 registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                     if (isGranted) {
                         loadContacts();
                     }
                 });
-
-//        requestWriteContactsPermissionLauncher =
-//                registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-//                    // Handle the result if needed
-//                });
     }
 
     @Nullable
@@ -72,7 +73,11 @@ public class ContactsFragment extends Fragment {
         ListView listView = view.findViewById(R.id.listView);
         FloatingActionButton addContactButton = view.findViewById(R.id.addContactButton);
 
-        adapter = new ContactsAdapter(getContext(), contactsAndHeaders);
+        adapter = new ContactsAdapter(getContext(), contactsAndHeaders, contact -> {
+            Intent intent = new Intent(getActivity(), ModifyContactActivity.class);
+            intent.putExtra("CONTACT_ID", contact.getId());
+            modifyContactActivityLauncher.launch(intent);
+        });
         listView.setAdapter(adapter);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -97,12 +102,12 @@ public class ContactsFragment extends Fragment {
             loadContacts();
         } else {
             requestReadContactsPermissionLauncher.launch(Manifest.permission.READ_CONTACTS);
-
         }
 
         return view;
     }
 
+    @SuppressLint("Range")
     public void loadContacts() {
         contactsAndHeaders.clear();
         Cursor cursor = requireActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
@@ -111,14 +116,15 @@ public class ContactsFragment extends Fragment {
 
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                @SuppressLint("Range") String phoneNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                long id = cursor.getLong(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
+                String name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                String phoneNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                 String initial = getInitialGroup(name);
 
                 if (!groupedContacts.containsKey(initial)) {
                     groupedContacts.put(initial, new ArrayList<>());
                 }
-                Objects.requireNonNull(groupedContacts.get(initial)).add(new ContactsAdapter.Contact(name, phoneNumber));
+                Objects.requireNonNull(groupedContacts.get(initial)).add(new ContactsAdapter.Contact(id, name, phoneNumber));
             }
             cursor.close();
         }

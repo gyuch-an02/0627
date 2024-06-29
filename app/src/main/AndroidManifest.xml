@@ -41,6 +41,8 @@
 
         <activity android:name=".contacts.AddContactActivity" />
 
+        <activity android:name=".contacts.ModifyContactActivity" />
+
     </application>
 
 </manifest>

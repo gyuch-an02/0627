@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final String[] PERMISSIONS = {
         Manifest.permission.READ_CONTACTS,
+        Manifest.permission.WRITE_CONTACTS,
         Manifest.permission.READ_EXTERNAL_STORAGE
     };
 

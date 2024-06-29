@@ -8,4 +8,6 @@
     <string name="todo_label">To-do</string>
     <string name="diary_label">Diary</string>
     <string name="diary_placeholder">Write your diary here</string>
+    <string name="title_modify">Modify</string>
+    <string name="title_delete">Delete</string>
 </resources>
