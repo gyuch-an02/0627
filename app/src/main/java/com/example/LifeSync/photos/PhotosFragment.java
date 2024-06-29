@@ -88,8 +88,8 @@ public class PhotosFragment extends Fragment {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setView(dateRangeView)
-                .setTitle("Select Date Range")
-                .setPositiveButton("OK", (dialog, which) -> {
+                .setTitle("검색 필터")
+                .setPositiveButton("확인", (dialog, which) -> {
                     String startDateString = startDateEditText.getText().toString();
                     String endDateString = endDateEditText.getText().toString();
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -102,7 +102,10 @@ public class PhotosFragment extends Fragment {
                         e.printStackTrace();
                     }
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton("취소", null)
+                .setNeutralButton("초기화", (dialog, which) -> {
+                    groupedPhotoAdapter.updateData(groupedPhotos);
+                })
                 .create()
                 .show();
     }
