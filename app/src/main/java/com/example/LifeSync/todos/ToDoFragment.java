@@ -28,7 +28,7 @@ import com.michalsvec.singlerowcalendar.calendar.CalendarViewManager;
 import com.michalsvec.singlerowcalendar.calendar.SingleRowCalendar;
 import com.michalsvec.singlerowcalendar.calendar.SingleRowCalendarAdapter;
 import com.michalsvec.singlerowcalendar.selection.CalendarSelectionManager;
-import com.michalsvec.singlerowcalendar.utils.DateUtils;
+
 import com.whiteelephant.monthpicker.MonthPickerDialog;
 
 import java.text.SimpleDateFormat;
@@ -141,7 +141,7 @@ public class ToDoFragment extends Fragment {
             }
 
             @Override
-            public void whenSelectionChanged(boolean isSelected, int position, Date date) {
+            public void whenSelectionChanged(boolean isSelected, int position, @NonNull Date date) {
                 if (isSelected) {
                     saveToDoList(selectedDate);
                     saveTagList(selectedDate);
@@ -162,12 +162,7 @@ public class ToDoFragment extends Fragment {
             }
         };
 
-        CalendarSelectionManager rowSelectionManager = new CalendarSelectionManager() {
-            @Override
-            public boolean canBeItemSelected(int position, Date date) {
-                return true;
-            }
-        };
+        CalendarSelectionManager rowSelectionManager = (position, date) -> true;
 
         singleRowCalendar.setCalendarViewManager(rowCalendarManager);
         singleRowCalendar.setCalendarChangesObserver(rowCalendarChangesObserver);
@@ -274,15 +269,13 @@ public class ToDoFragment extends Fragment {
                     int atIndex = input.indexOf("@");
                     String query = input.substring(atIndex + 1);
                     if (!query.isEmpty()) {
-                        diaryAutoCompleteTextView.post(() -> {
-                            adapter.getFilter().filter(query, resultCount -> {
-                                if (resultCount > 0) {
-                                    diaryAutoCompleteTextView.showDropDown();
-                                } else {
-                                    diaryAutoCompleteTextView.dismissDropDown();
-                                }
-                            });
-                        });
+                        diaryAutoCompleteTextView.post(() -> adapter.getFilter().filter(query, resultCount -> {
+                            if (resultCount > 0) {
+                                diaryAutoCompleteTextView.showDropDown();
+                            } else {
+                                diaryAutoCompleteTextView.dismissDropDown();
+                            }
+                        }));
                     } else {
                         diaryAutoCompleteTextView.post(() -> {
                             adapter.getFilter().filter("");
@@ -549,9 +542,7 @@ public class ToDoFragment extends Fragment {
                     updateToDoContainer();
                 });
 
-                itemView.setOnClickListener(v -> {
-                    showModifyDeleteDialog(position);
-                });
+                itemView.setOnClickListener(v -> showModifyDeleteDialog(position));
 
                 todoContainer.addView(itemView);
             }
