@@ -68,13 +68,13 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"/>
 
-            <AutoCompleteTextView
+            <EditText
                 android:id="@+id/diaryEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:autofillHints="@string/diary_placeholder"
                 android:hint="@string/diary_placeholder"
-                android:inputType="text"
+                android:inputType="none"
                 android:visibility="gone"
                 android:minHeight="200dp"
                 android:padding="10dp"
