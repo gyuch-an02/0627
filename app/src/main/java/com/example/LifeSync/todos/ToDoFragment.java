@@ -24,8 +24,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 
@@ -37,7 +35,7 @@ public class ToDoFragment extends Fragment {
     private TextView emptyTextView;
     private TextView textTodo;
     private TextView textDiary;
-    private AutoCompleteTextView diaryEditText;
+    private AutoCompleteTextView diaryAutoCompleteTextView;
     private ArrayList<ToDoItem> toDoList;
     private String selectedDate;
     private Boolean isTodoEmpty;
@@ -53,7 +51,7 @@ public class ToDoFragment extends Fragment {
         emptyTextView = view.findViewById(R.id.emptyTextView);
         textTodo = view.findViewById(R.id.text_todo);
         textDiary = view.findViewById(R.id.text_diary);
-        diaryEditText = view.findViewById(R.id.diaryEditText);
+        diaryAutoCompleteTextView = view.findViewById(R.id.diaryAutoCompleteTextView);
         isTodoEmpty = Boolean.TRUE;
 
         toDoList = new ArrayList<>();
@@ -86,7 +84,7 @@ public class ToDoFragment extends Fragment {
         textTodo.setTextColor(ContextCompat.getColor(requireContext(), R.color.active_text));
         textDiary.setTextColor(ContextCompat.getColor(requireContext(), R.color.inactive_text));
 
-        diaryEditText.setVisibility(View.GONE);
+        diaryAutoCompleteTextView.setVisibility(View.GONE);
         if (isTodoEmpty) {
             emptyTextView.setVisibility(View.VISIBLE);
         }
@@ -104,17 +102,17 @@ public class ToDoFragment extends Fragment {
         emptyTextView.setVisibility(View.GONE);
         todoContainer.setVisibility(View.GONE);
         addTodoButton.setVisibility(View.GONE);
-        diaryEditText.setVisibility(View.VISIBLE);
+        diaryAutoCompleteTextView.setVisibility(View.VISIBLE);
 
         textTodo.setOnClickListener(v -> activateTodo());
         textDiary.setOnClickListener(null); // No action for the activated text
     }
 
     private void loadToDoList(String date) {
-        if (diaryEditText.getVisibility() == View.VISIBLE) {
+        if (diaryAutoCompleteTextView.getVisibility() == View.VISIBLE) {
             // Load diary content
             String diaryContent = SharedPreferencesHelper.loadDiaryContent(requireContext(), date);
-            diaryEditText.setText(diaryContent);
+            diaryAutoCompleteTextView.setText(diaryContent);
         } else {
             // Load to-do list
             toDoList.clear();
@@ -125,9 +123,9 @@ public class ToDoFragment extends Fragment {
     }
 
     private void saveToDoList(String date) {
-        if (diaryEditText.getVisibility() == View.VISIBLE) {
+        if (diaryAutoCompleteTextView.getVisibility() == View.VISIBLE) {
             // Save diary content
-            String diaryContent = diaryEditText.getText().toString();
+            String diaryContent = diaryAutoCompleteTextView.getText().toString();
             SharedPreferencesHelper.saveDiaryContent(requireContext(), date, diaryContent);
         } else {
             // Save to-do list

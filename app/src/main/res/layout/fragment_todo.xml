@@ -69,7 +69,7 @@
                 android:orientation="vertical"/>
 
             <AutoCompleteTextView
-                android:id="@+id/diaryEditText"
+                android:id="@+id/diaryAutoCompleteTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:autofillHints="@string/diary_placeholder"
