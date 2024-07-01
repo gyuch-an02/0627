@@ -2,9 +2,13 @@ package com.example.LifeSync.contacts;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.view.LayoutInflater;
@@ -23,6 +27,7 @@ import androidx.appcompat.widget.SearchView;
 import com.example.LifeSync.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,22 +39,14 @@ public class ContactsFragment extends Fragment {
     private ContactsAdapter adapter;
     private static final ArrayList<Object> contactsAndHeaders = new ArrayList<>();
 
-    private ActivityResultLauncher<Intent> addContactActivityLauncher;
-    private ActivityResultLauncher<Intent> modifyContactActivityLauncher;
+    private ActivityResultLauncher<Intent> contactActivityLauncher;
     private ActivityResultLauncher<String> requestReadContactsPermissionLauncher;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        addContactActivityLauncher =
-                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                    if (result.getResultCode() == AppCompatActivity.RESULT_OK) {
-                        loadContacts();
-                    }
-                });
-
-        modifyContactActivityLauncher =
+        contactActivityLauncher =
                 registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                     if (result.getResultCode() == AppCompatActivity.RESULT_OK) {
                         loadContacts();
@@ -74,9 +71,9 @@ public class ContactsFragment extends Fragment {
         FloatingActionButton addContactButton = view.findViewById(R.id.addContactButton);
 
         adapter = new ContactsAdapter(getContext(), contactsAndHeaders, contact -> {
-            Intent intent = new Intent(getActivity(), ModifyContactActivity.class);
+            Intent intent = new Intent(getActivity(), ContactActivity.class);
             intent.putExtra("CONTACT_ID", contact.getId());
-            modifyContactActivityLauncher.launch(intent);
+            contactActivityLauncher.launch(intent);
         });
         listView.setAdapter(adapter);
 
@@ -94,8 +91,8 @@ public class ContactsFragment extends Fragment {
         });
 
         addContactButton.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), AddContactActivity.class);
-            addContactActivityLauncher.launch(intent);
+            Intent intent = new Intent(getActivity(), ContactActivity.class);
+            contactActivityLauncher.launch(intent);
         });
 
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
@@ -119,12 +116,13 @@ public class ContactsFragment extends Fragment {
                 long id = cursor.getLong(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
                 String name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                 String phoneNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                Bitmap profileImage = loadContactPhoto(id);
                 String initial = getInitialGroup(name);
 
                 if (!groupedContacts.containsKey(initial)) {
                     groupedContacts.put(initial, new ArrayList<>());
                 }
-                Objects.requireNonNull(groupedContacts.get(initial)).add(new ContactsAdapter.Contact(id, name, phoneNumber));
+                Objects.requireNonNull(groupedContacts.get(initial)).add(new ContactsAdapter.Contact(id, name, phoneNumber, profileImage));
             }
             cursor.close();
         }
@@ -135,6 +133,12 @@ public class ContactsFragment extends Fragment {
         }
 
         adapter.notifyDataSetChanged();
+    }
+
+    private Bitmap loadContactPhoto(long contactId) {
+        Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId);
+        InputStream photoInputStream = ContactsContract.Contacts.openContactPhotoInputStream(requireActivity().getContentResolver(), contactUri);
+        return photoInputStream != null ? BitmapFactory.decodeStream(photoInputStream) : null;
     }
 
     private String getInitialGroup(String name) {
