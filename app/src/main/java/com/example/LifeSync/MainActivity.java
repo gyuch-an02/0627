@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -25,17 +24,28 @@ import com.example.LifeSync.todos.ToDoFragment;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-@RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 public class MainActivity extends AppCompatActivity {
     private static final int MULTIPLE_PERMISSIONS = 100;
 
-    private final String[] PERMISSIONS = {
-        Manifest.permission.READ_CONTACTS,
-        Manifest.permission.WRITE_CONTACTS,
-        Manifest.permission.READ_EXTERNAL_STORAGE
+    private final String[] PERMISSIONS_32 = {
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.WRITE_CONTACTS,
+            Manifest.permission.READ_EXTERNAL_STORAGE
     };
 
-    @RequiresApi(api = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    private final String[] PERMISSIONS_33 = {
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.WRITE_CONTACTS,
+            Manifest.permission.READ_MEDIA_IMAGES,
+            Manifest.permission.READ_MEDIA_VIDEO
+    };
+
+    private final String[] PERMISSIONS_34 = {
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.WRITE_CONTACTS,
+            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,10 +79,18 @@ public class MainActivity extends AppCompatActivity {
         }).attach();
     }
 
-
     private void requestPermissions() {
+        String[] permissionsToRequest;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            permissionsToRequest = PERMISSIONS_34;
+        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.TIRAMISU) {
+            permissionsToRequest = PERMISSIONS_33;
+        } else {
+            permissionsToRequest = PERMISSIONS_32;
+        }
+
         boolean permissionsNeeded = false;
-        for (String permission : PERMISSIONS) {
+        for (String permission : permissionsToRequest) {
             // 사용자가 permission 허용하지 않았다면
             if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
                 permissionsNeeded = true;
@@ -80,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         if (permissionsNeeded) {
-            //permission 허용 요청 다이얼로그 표시
-            ActivityCompat.requestPermissions(this, PERMISSIONS, MULTIPLE_PERMISSIONS);
+            // permission 허용 요청 다이얼로그 표시
+            ActivityCompat.requestPermissions(this, permissionsToRequest, MULTIPLE_PERMISSIONS);
         }
     }
 

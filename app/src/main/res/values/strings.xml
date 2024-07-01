@@ -10,4 +10,7 @@
     <string name="diary_placeholder">Write your diary here</string>
     <string name="title_modify">Modify</string>
     <string name="title_delete">Delete</string>
+    <string name="hint_name">이름</string>
+    <string name="hint_phone">전화번호</string>
+    <string name="text_save">저장</string>
 </resources>
