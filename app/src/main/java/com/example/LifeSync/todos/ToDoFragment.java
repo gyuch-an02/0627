@@ -1,3 +1,4 @@
+// ToDoFragment.java
 package com.example.LifeSync.todos;
 
 import android.app.AlertDialog;
@@ -7,6 +8,8 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -21,10 +24,12 @@ import androidx.fragment.app.Fragment;
 
 import com.example.LifeSync.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.example.LifeSync.contacts.ContactsFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class ToDoFragment extends Fragment {
@@ -35,10 +40,12 @@ public class ToDoFragment extends Fragment {
     private TextView emptyTextView;
     private TextView textTodo;
     private TextView textDiary;
-    private EditText diaryEditText;
+    private AutoCompleteTextView diaryAutoCompleteTextView;
+    private List<String> contactNames;
     private ArrayList<ToDoItem> toDoList;
     private String selectedDate;
     private Boolean isTodoEmpty;
+    private ArrayAdapter<String> adapter;
 
     @Nullable
     @Override
@@ -51,7 +58,10 @@ public class ToDoFragment extends Fragment {
         emptyTextView = view.findViewById(R.id.emptyTextView);
         textTodo = view.findViewById(R.id.text_todo);
         textDiary = view.findViewById(R.id.text_diary);
-        diaryEditText = view.findViewById(R.id.diaryEditText);
+        diaryAutoCompleteTextView = view.findViewById(R.id.diaryAutoCompleteTextView);
+        contactNames = ContactsFragment.getContactNames();
+
+
         isTodoEmpty = Boolean.TRUE;
 
         toDoList = new ArrayList<>();
@@ -68,10 +78,91 @@ public class ToDoFragment extends Fragment {
         addTodoButton.setOnClickListener(v -> showAddToDoDialog());
 
         setUpToggle();
-        setUpDiaryTextWatcher();
+        setUpAutoCompleteTextView();
 
         return view;
     }
+
+    private void setUpAutoCompleteTextView() {
+        adapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, contactNames);
+        diaryAutoCompleteTextView.setAdapter(adapter);
+
+        diaryAutoCompleteTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Do nothing
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String input = s.toString();
+                if (input.contains("@")) {
+                    int atIndex = input.indexOf("@");
+                    String query = input.substring(atIndex + 1);
+                    if (!query.isEmpty()) {
+                        diaryAutoCompleteTextView.post(() -> {
+                            adapter.getFilter().filter(query, resultCount -> {
+                                if (resultCount > 0) {
+                                    diaryAutoCompleteTextView.showDropDown();
+                                } else {
+                                    diaryAutoCompleteTextView.dismissDropDown();
+                                }
+                            });
+                        });
+                    } else {
+                        diaryAutoCompleteTextView.post(() -> diaryAutoCompleteTextView.showDropDown());
+                    }
+                } else {
+                    diaryAutoCompleteTextView.post(() -> diaryAutoCompleteTextView.dismissDropDown());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Do nothing
+            }
+        });
+
+        diaryAutoCompleteTextView.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                diaryAutoCompleteTextView.dismissDropDown();
+            } else {
+                String input = diaryAutoCompleteTextView.getText().toString();
+                if (input.contains("@")) {
+                    int atIndex = input.indexOf("@");
+                    String query = input.substring(atIndex + 1);
+                    if (!query.isEmpty()) {
+                        adapter.getFilter().filter(query, count -> {
+                            if (count > 0) {
+                                diaryAutoCompleteTextView.showDropDown();
+                            } else {
+                                diaryAutoCompleteTextView.dismissDropDown();
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
+        diaryAutoCompleteTextView.setOnClickListener(v -> {
+            String input = diaryAutoCompleteTextView.getText().toString();
+            if (input.contains("@")) {
+                int atIndex = input.indexOf("@");
+                String query = input.substring(atIndex + 1);
+                if (!query.isEmpty()) {
+                    adapter.getFilter().filter(query, count -> {
+                        if (count > 0) {
+                            diaryAutoCompleteTextView.showDropDown();
+                        } else {
+                            diaryAutoCompleteTextView.dismissDropDown();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
 
     private void setUpToggle() {
         textTodo.setTextColor(ContextCompat.getColor(requireContext(), R.color.active_text));
@@ -85,7 +176,7 @@ public class ToDoFragment extends Fragment {
         textTodo.setTextColor(ContextCompat.getColor(requireContext(), R.color.active_text));
         textDiary.setTextColor(ContextCompat.getColor(requireContext(), R.color.inactive_text));
 
-        diaryEditText.setVisibility(View.GONE);
+        diaryAutoCompleteTextView.setVisibility(View.GONE);
         if (isTodoEmpty) {
             emptyTextView.setVisibility(View.VISIBLE);
         }
@@ -103,19 +194,17 @@ public class ToDoFragment extends Fragment {
         emptyTextView.setVisibility(View.GONE);
         todoContainer.setVisibility(View.GONE);
         addTodoButton.setVisibility(View.GONE);
-        diaryEditText.setVisibility(View.VISIBLE);
-
-        loadToDoList(selectedDate);
+        diaryAutoCompleteTextView.setVisibility(View.VISIBLE);
 
         textTodo.setOnClickListener(v -> activateTodo());
         textDiary.setOnClickListener(null); // No action for the activated text
     }
 
     private void loadToDoList(String date) {
-        if (diaryEditText.getVisibility() == View.VISIBLE) {
+        if (diaryAutoCompleteTextView.getVisibility() == View.VISIBLE) {
             // Load diary content
             String diaryContent = SharedPreferencesHelper.loadDiaryContent(requireContext(), date);
-            diaryEditText.setText(diaryContent);
+            diaryAutoCompleteTextView.setText(diaryContent);
         } else {
             // Load to-do list
             toDoList.clear();
@@ -126,9 +215,9 @@ public class ToDoFragment extends Fragment {
     }
 
     private void saveToDoList(String date) {
-        if (diaryEditText.getVisibility() == View.VISIBLE) {
+        if (diaryAutoCompleteTextView.getVisibility() == View.VISIBLE) {
             // Save diary content
-            String diaryContent = diaryEditText.getText().toString();
+            String diaryContent = diaryAutoCompleteTextView.getText().toString();
             SharedPreferencesHelper.saveDiaryContent(requireContext(), date, diaryContent);
         } else {
             // Save to-do list
@@ -201,9 +290,7 @@ public class ToDoFragment extends Fragment {
     private void updateToDoContainer() {
         todoContainer.removeAllViews();
         if (toDoList.isEmpty()) {
-            if (todoContainer.getVisibility() == View.VISIBLE) {
-                emptyTextView.setVisibility(View.VISIBLE);
-            }
+            emptyTextView.setVisibility(View.VISIBLE);
             isTodoEmpty = Boolean.TRUE;
         } else {
             emptyTextView.setVisibility(View.GONE);
@@ -243,25 +330,6 @@ public class ToDoFragment extends Fragment {
             } else {
                 // Otherwise, sort by done status (not done items first)
                 return Boolean.compare(o1.isDone(), o2.isDone());
-            }
-        });
-    }
-
-    private void setUpDiaryTextWatcher() {
-        diaryEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // No action needed before text changes
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // No action needed while text is changing
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                saveToDoList(selectedDate);
             }
         });
     }

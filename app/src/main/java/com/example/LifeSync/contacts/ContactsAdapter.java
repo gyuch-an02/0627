@@ -3,13 +3,6 @@ package com.example.LifeSync.contacts;
 import android.content.ContentUris;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.view.LayoutInflater;
@@ -18,11 +11,11 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
+
 import com.example.LifeSync.R;
 
 import java.util.ArrayList;
@@ -92,28 +85,18 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         } else {
             TextView nameTextView = convertView.findViewById(R.id.nameTextView);
             TextView phoneTextView = convertView.findViewById(R.id.phoneTextView);
-            ImageView profileImageView = convertView.findViewById(R.id.item_profile_image);
-
             Contact contact = (Contact) filteredItems.get(position);
             nameTextView.setText(contact.getName());
             phoneTextView.setText(contact.getPhoneNumber());
-
-            // Load profile image or set default
-            if (contact.getProfileImage() != null) {
-                profileImageView.setImageBitmap(getRoundedBitmap(contact.getProfileImage()));
-            } else {
-                Bitmap defaultProfileImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_default_profile);
-                profileImageView.setImageBitmap(getRoundedBitmap(defaultProfileImage));
-            }
 
             convertView.setOnLongClickListener(v -> {
                 showPopupMenu(v, contact);
                 return true;
             });
 
-//            convertView.setOnClickListener(v -> {
-//                contactActionListener.onContactAction(contact);
-//            });
+            convertView.setOnClickListener(v -> {
+                contactActionListener.onContactAction(contact);
+            });
         }
 
         return convertView;
@@ -187,31 +170,6 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         }
     }
 
-    private Bitmap getRoundedBitmap(Bitmap bitmap) {
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-        int radius = Math.min(width, height) / 2;
-
-        Bitmap output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(output);
-
-        final Paint paint = new Paint();
-        paint.setAntiAlias(true);
-
-        final Rect rect = new Rect(0, 0, width, height);
-        final RectF rectF = new RectF(rect);
-        float roundPx = radius;
-
-        canvas.drawARGB(0, 0, 0, 0);
-        paint.setColor(0xFF000000);
-        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
-
-        paint.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
-        canvas.drawBitmap(bitmap, rect, rect, paint);
-
-        return output;
-    }
-
     @Override
     public Filter getFilter() {
         if (contactFilter == null) {
@@ -275,13 +233,11 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         private final long id;
         private final String name;
         private final String phoneNumber;
-        private Bitmap profileImage;
 
-        public Contact(long id, String name, String phoneNumber, Bitmap profileImage) {
+        public Contact(long id, String name, String phoneNumber) {
             this.id = id;
             this.name = name;
             this.phoneNumber = phoneNumber;
-            this.profileImage = profileImage;
         }
 
         public long getId() {
@@ -294,10 +250,6 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
 
         public String getPhoneNumber() {
             return phoneNumber;
-        }
-
-        public Bitmap getProfileImage() {
-            return profileImage;
         }
     }
 }
