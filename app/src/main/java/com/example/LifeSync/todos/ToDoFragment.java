@@ -104,14 +104,14 @@ public class ToDoFragment extends Fragment {
 
         CalendarViewManager rowCalendarManager = new CalendarViewManager() {
             @Override
-            public int setCalendarViewResourceId(int position, Date date, boolean isSelected) {
+            public int setCalendarViewResourceId(int position, @NonNull Date date, boolean isSelected) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(date);
                 return isSelected ? R.layout.selected_calendar_item : R.layout.calendar_item;
             }
 
             @Override
-            public void bindDataToCalendarView(SingleRowCalendarAdapter.CalendarViewHolder holder, Date date, int position, boolean isSelected) {
+            public void bindDataToCalendarView(SingleRowCalendarAdapter.CalendarViewHolder holder, @NonNull Date date, int position, boolean isSelected) {
                 TextView tvDay = holder.itemView.findViewById(R.id.tv_day);
                 TextView tvWeek = holder.itemView.findViewById(R.id.tv_week);
                 tvDay.setText(getDayNumber(date));
@@ -181,7 +181,6 @@ public class ToDoFragment extends Fragment {
 
     private void setInitialSelection() {
         Calendar today = Calendar.getInstance();
-        Date targetDate;
         if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) && calendar.get(Calendar.MONTH) == today.get(Calendar.MONTH)) {
             // If the selected month and year are the same as the current month and year, set the date to today
             calendar.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH));
@@ -229,8 +228,6 @@ public class ToDoFragment extends Fragment {
     }
 
     private void updateCalendar() {
-        Calendar today = Calendar.getInstance();
-
         updateMonthYearDisplay();
         singleRowCalendar.setDates(getFutureDatesOfCurrentMonth());
         singleRowCalendar.init();
@@ -552,9 +549,8 @@ public class ToDoFragment extends Fragment {
                     updateToDoContainer();
                 });
 
-                itemView.setOnLongClickListener(v -> {
+                itemView.setOnClickListener(v -> {
                     showModifyDeleteDialog(position);
-                    return true;
                 });
 
                 todoContainer.addView(itemView);
