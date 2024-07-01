@@ -57,6 +57,8 @@ public class ToDoFragment extends Fragment {
     private Calendar calendar;
     private int currentMonth;
     private ArrayAdapter<String> adapter;
+    private LinearLayout tagContainer;
+    private List<String> tagList;
 
     @Nullable
     @Override
@@ -74,14 +76,16 @@ public class ToDoFragment extends Fragment {
         monthYear = view.findViewById(R.id.month_year);
         diaryAutoCompleteTextView = view.findViewById(R.id.diaryAutoCompleteTextView);
         contactNames = ContactsFragment.getContactNames();
-
+        tagContainer = view.findViewById(R.id.tagContainer);
 
         isTodoEmpty = Boolean.TRUE;
 
         toDoList = new ArrayList<>();
+        tagList = new ArrayList<>();
 
         selectedDate = getCurrentDate();
         loadToDoList(selectedDate);
+        loadTagList(selectedDate);
 
         setUpSingleRowCalendar();
         setUpMonthYearDisplay();
@@ -140,8 +144,10 @@ public class ToDoFragment extends Fragment {
             public void whenSelectionChanged(boolean isSelected, int position, Date date) {
                 if (isSelected) {
                     saveToDoList(selectedDate);
+                    saveTagList(selectedDate);
                     selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
                     loadToDoList(selectedDate);
+                    loadTagList(selectedDate);
                 }
             }
 
@@ -297,6 +303,18 @@ public class ToDoFragment extends Fragment {
             }
         });
 
+        diaryAutoCompleteTextView.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedTag = adapter.getItem(position);
+            if (selectedTag != null) {
+                String currentText = diaryAutoCompleteTextView.getText().toString();
+                int atIndex = currentText.lastIndexOf("@");
+                String newText = currentText.substring(0, atIndex + 1) + selectedTag + " ";
+                diaryAutoCompleteTextView.setText(newText);
+                diaryAutoCompleteTextView.setSelection(newText.length());
+                addTagToLayout(selectedTag);
+            }
+        });
+
         diaryAutoCompleteTextView.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
                 diaryAutoCompleteTextView.dismissDropDown();
@@ -336,6 +354,51 @@ public class ToDoFragment extends Fragment {
         });
     }
 
+    private void addTagToLayout(String tag) {
+        tagContainer.setVisibility(View.VISIBLE);
+
+        TextView tagView = new TextView(requireContext());
+        tagView.setText(tag);
+        tagView.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.tag_background));
+        tagView.setPadding(8, 4, 8, 4);
+        tagView.setTextColor(ContextCompat.getColor(requireContext(), R.color.white));
+        tagView.setOnClickListener(v -> {
+            tagContainer.removeView(tagView);
+            tagList.remove(tag);
+            saveTagList(selectedDate);
+            if (tagContainer.getChildCount() == 0) {
+                tagContainer.setVisibility(View.GONE);
+            }
+        });
+
+        tagContainer.addView(tagView);
+        if (!tagList.contains(tag)) {
+            tagList.add(tag);
+            saveTagList(selectedDate);
+        }
+    }
+
+
+    private void loadTagList(String date) {
+        tagList = SharedPreferencesHelper.loadTagList(requireContext(), date);
+        updateTagContainer();
+    }
+
+    private void saveTagList(String date) {
+        SharedPreferencesHelper.saveTagList(requireContext(), date, tagList);
+    }
+
+    private void updateTagContainer() {
+        tagContainer.removeAllViews();
+        if (tagList.isEmpty()) {
+            tagContainer.setVisibility(View.GONE);
+        } else {
+            tagContainer.setVisibility(View.VISIBLE);
+            for (String tag : tagList) {
+                addTagToLayout(tag);
+            }
+        }
+    }
 
     private void setUpToggle() {
         textTodo.setTextColor(ContextCompat.getColor(requireContext(), R.color.active_text));

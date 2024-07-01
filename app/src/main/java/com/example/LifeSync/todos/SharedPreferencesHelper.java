@@ -8,12 +8,14 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SharedPreferencesHelper {
 
     private static final String PREFS_NAME = "todo_prefs";
     private static final String TODO_LIST_KEY = "todo_list_";
     private static final String DIARY_KEY = "diary_";
+    private static final String TAG_LIST_KEY = "tag_list_";
 
     // Save the to-do list for a specific date
     public static void saveToDoList(Context context, String date, ArrayList<ToDoItem> toDoList) {
@@ -46,5 +48,24 @@ public class SharedPreferencesHelper {
     public static String loadDiaryContent(Context context, String date) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return prefs.getString(DIARY_KEY + date, "");
+    }
+
+    // Save the tag list for a specific date
+    public static void saveTagList(Context context, String date, List<String> tagList) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(tagList);
+        editor.putString(TAG_LIST_KEY + date, json);
+        editor.apply();
+    }
+
+    // Load the tag list for a specific date
+    public static List<String> loadTagList(Context context, String date) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = prefs.getString(TAG_LIST_KEY + date, null);
+        Type type = new TypeToken<List<String>>() {}.getType();
+        return json == null ? new ArrayList<>() : gson.fromJson(json, type);
     }
 }
