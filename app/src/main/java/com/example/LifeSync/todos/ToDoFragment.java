@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AutoCompleteTextView;
 import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -36,7 +37,7 @@ public class ToDoFragment extends Fragment {
     private TextView emptyTextView;
     private TextView textTodo;
     private TextView textDiary;
-    private EditText diaryEditText;
+    private AutoCompleteTextView diaryEditText;
     private ArrayList<ToDoItem> toDoList;
     private String selectedDate;
     private Boolean isTodoEmpty;
