@@ -3,9 +3,12 @@ package com.example.LifeSync.todos;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.CalendarView;
 import android.widget.EditText;
@@ -21,10 +24,12 @@ import androidx.fragment.app.Fragment;
 
 import com.example.LifeSync.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.example.LifeSync.contacts.ContactsFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class ToDoFragment extends Fragment {
@@ -36,9 +41,11 @@ public class ToDoFragment extends Fragment {
     private TextView textTodo;
     private TextView textDiary;
     private AutoCompleteTextView diaryAutoCompleteTextView;
+    private List<String> contactNames;
     private ArrayList<ToDoItem> toDoList;
     private String selectedDate;
     private Boolean isTodoEmpty;
+    private ArrayAdapter<String> adapter;
 
     @Nullable
     @Override
@@ -52,6 +59,9 @@ public class ToDoFragment extends Fragment {
         textTodo = view.findViewById(R.id.text_todo);
         textDiary = view.findViewById(R.id.text_diary);
         diaryAutoCompleteTextView = view.findViewById(R.id.diaryAutoCompleteTextView);
+        contactNames = ContactsFragment.getContactNames();
+
+
         isTodoEmpty = Boolean.TRUE;
 
         toDoList = new ArrayList<>();
@@ -68,9 +78,91 @@ public class ToDoFragment extends Fragment {
         addTodoButton.setOnClickListener(v -> showAddToDoDialog());
 
         setUpToggle();
+        setUpAutoCompleteTextView();
 
         return view;
     }
+
+    private void setUpAutoCompleteTextView() {
+        adapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, contactNames);
+        diaryAutoCompleteTextView.setAdapter(adapter);
+
+        diaryAutoCompleteTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // Do nothing
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String input = s.toString();
+                if (input.contains("@")) {
+                    int atIndex = input.indexOf("@");
+                    String query = input.substring(atIndex + 1);
+                    if (!query.isEmpty()) {
+                        diaryAutoCompleteTextView.post(() -> {
+                            adapter.getFilter().filter(query, resultCount -> {
+                                if (resultCount > 0) {
+                                    diaryAutoCompleteTextView.showDropDown();
+                                } else {
+                                    diaryAutoCompleteTextView.dismissDropDown();
+                                }
+                            });
+                        });
+                    } else {
+                        diaryAutoCompleteTextView.post(() -> diaryAutoCompleteTextView.showDropDown());
+                    }
+                } else {
+                    diaryAutoCompleteTextView.post(() -> diaryAutoCompleteTextView.dismissDropDown());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Do nothing
+            }
+        });
+
+        diaryAutoCompleteTextView.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                diaryAutoCompleteTextView.dismissDropDown();
+            } else {
+                String input = diaryAutoCompleteTextView.getText().toString();
+                if (input.contains("@")) {
+                    int atIndex = input.indexOf("@");
+                    String query = input.substring(atIndex + 1);
+                    if (!query.isEmpty()) {
+                        adapter.getFilter().filter(query, count -> {
+                            if (count > 0) {
+                                diaryAutoCompleteTextView.showDropDown();
+                            } else {
+                                diaryAutoCompleteTextView.dismissDropDown();
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
+        diaryAutoCompleteTextView.setOnClickListener(v -> {
+            String input = diaryAutoCompleteTextView.getText().toString();
+            if (input.contains("@")) {
+                int atIndex = input.indexOf("@");
+                String query = input.substring(atIndex + 1);
+                if (!query.isEmpty()) {
+                    adapter.getFilter().filter(query, count -> {
+                        if (count > 0) {
+                            diaryAutoCompleteTextView.showDropDown();
+                        } else {
+                            diaryAutoCompleteTextView.dismissDropDown();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
 
     private void setUpToggle() {
         textTodo.setTextColor(ContextCompat.getColor(requireContext(), R.color.active_text));

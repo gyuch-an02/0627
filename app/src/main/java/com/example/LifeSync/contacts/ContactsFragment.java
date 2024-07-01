@@ -32,7 +32,7 @@ import java.util.Objects;
 public class ContactsFragment extends Fragment {
 
     private ContactsAdapter adapter;
-    private final ArrayList<Object> contactsAndHeaders = new ArrayList<>();
+    private static final ArrayList<Object> contactsAndHeaders = new ArrayList<>();
 
     private ActivityResultLauncher<Intent> addContactActivityLauncher;
     private ActivityResultLauncher<Intent> modifyContactActivityLauncher;
@@ -152,5 +152,15 @@ public class ContactsFragment extends Fragment {
             // Other characters
             return "#";
         }
+    }
+
+    public static List<String> getContactNames() {
+        List<String> contactNames = new ArrayList<>();
+        for (Object item : contactsAndHeaders) {
+            if (item instanceof ContactsAdapter.Contact) {
+                contactNames.add(((ContactsAdapter.Contact) item).getName());
+            }
+        }
+        return contactNames;
     }
 }
