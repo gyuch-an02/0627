@@ -176,16 +176,21 @@ public class ToDoFragment extends Fragment {
 
     private void setInitialSelection() {
         Calendar today = Calendar.getInstance();
+        int targetDate;
         if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) && calendar.get(Calendar.MONTH) == today.get(Calendar.MONTH)) {
             // If the selected month and year are the same as the current month and year, set the date to today
-            calendar.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH));
-            singleRowCalendar.select(today.get(Calendar.DAY_OF_MONTH)-1);
+            targetDate = today.get(Calendar.DAY_OF_MONTH);
         } else {
             // Otherwise, set the date to the 1st of the selected month
-            calendar.set(Calendar.DAY_OF_MONTH, 1);
-            singleRowCalendar.select(0);
+            targetDate = 1;
         }
+        calendar.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH));
+        singleRowCalendar.select(targetDate - 1);
+
+        // Scroll to the selected date to make it visible
+        singleRowCalendar.scrollToPosition(targetDate-1);
     }
+
 
     private void setUpMonthYearDisplay() {
         updateMonthYearDisplay();
