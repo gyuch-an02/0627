@@ -281,7 +281,10 @@ public class ToDoFragment extends Fragment {
                             });
                         });
                     } else {
-                        diaryAutoCompleteTextView.post(() -> diaryAutoCompleteTextView.showDropDown());
+                        diaryAutoCompleteTextView.post(() -> {
+                            adapter.getFilter().filter("");
+                            diaryAutoCompleteTextView.showDropDown();
+                        });
                     }
                 } else {
                     diaryAutoCompleteTextView.post(() -> diaryAutoCompleteTextView.dismissDropDown());
