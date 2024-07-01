@@ -41,10 +41,7 @@ dependencies {
     implementation(libs.gson)
     testImplementation(libs.junit)
     implementation(libs.michalsvec.single.row.calendar)
-    implementation(libs.whiteelephant.monthandyearpicker) {
-        exclude(group = "com.android.support", module = "support-compat")
-        exclude(group = "com.android.support", module = "support-core-utils")
-    }
+    implementation(libs.whiteelephant.monthandyearpicker)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }
