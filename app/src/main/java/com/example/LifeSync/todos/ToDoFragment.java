@@ -1,13 +1,15 @@
 package com.example.LifeSync.todos;
 
 import android.app.AlertDialog;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,36 +23,53 @@ import androidx.fragment.app.Fragment;
 
 import com.example.LifeSync.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.michalsvec.singlerowcalendar.calendar.CalendarChangesObserver;
+import com.michalsvec.singlerowcalendar.calendar.CalendarViewManager;
+import com.michalsvec.singlerowcalendar.calendar.SingleRowCalendar;
+import com.michalsvec.singlerowcalendar.calendar.SingleRowCalendarAdapter;
+import com.michalsvec.singlerowcalendar.selection.CalendarSelectionManager;
+import com.michalsvec.singlerowcalendar.utils.DateUtils;
+import com.whiteelephant.monthpicker.MonthPickerDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class ToDoFragment extends Fragment {
 
-    private CalendarView calendarView;
+    private SingleRowCalendar singleRowCalendar;
     private LinearLayout todoContainer;
     private FloatingActionButton addTodoButton;
     private TextView emptyTextView;
     private TextView textTodo;
     private TextView textDiary;
     private EditText diaryEditText;
+    private TextView tvMonth;
+    private TextView tvYear;
+    private LinearLayout monthYear;
     private ArrayList<ToDoItem> toDoList;
     private String selectedDate;
     private Boolean isTodoEmpty;
+    private Calendar calendar;
+    private int currentMonth;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_todo, container, false);
 
-        calendarView = view.findViewById(R.id.calendarView);
+        singleRowCalendar = view.findViewById(R.id.singleRowCalendar);
         todoContainer = view.findViewById(R.id.todoContainer);
         addTodoButton = view.findViewById(R.id.addTodoButton);
         emptyTextView = view.findViewById(R.id.emptyTextView);
         textTodo = view.findViewById(R.id.text_todo);
         textDiary = view.findViewById(R.id.text_diary);
+        tvMonth = view.findViewById(R.id.tv_month);
+        tvYear = view.findViewById(R.id.tv_year);
+        monthYear = view.findViewById(R.id.month_year);
         diaryEditText = view.findViewById(R.id.diaryEditText);
         isTodoEmpty = Boolean.TRUE;
 
@@ -59,18 +78,179 @@ public class ToDoFragment extends Fragment {
         selectedDate = getCurrentDate();
         loadToDoList(selectedDate);
 
-        calendarView.setOnDateChangeListener((view1, year, month, dayOfMonth) -> {
-            saveToDoList(selectedDate);
-            selectedDate = String.format(Locale.getDefault(), "%d-%02d-%02d", year, month + 1, dayOfMonth);
-            loadToDoList(selectedDate);
-        });
-
+        setUpSingleRowCalendar();
+        setUpMonthYearDisplay();
+        setUpMonthYearPicker();
         addTodoButton.setOnClickListener(v -> showAddToDoDialog());
 
         setUpToggle();
         setUpDiaryTextWatcher();
 
         return view;
+    }
+
+    private void setUpSingleRowCalendar() {
+        calendar = Calendar.getInstance();
+        currentMonth = calendar.get(Calendar.MONTH);
+
+        CalendarViewManager rowCalendarManager = new CalendarViewManager() {
+            @Override
+            public int setCalendarViewResourceId(int position, Date date, boolean isSelected) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(date);
+                return isSelected ? R.layout.selected_calendar_item : R.layout.calendar_item;
+            }
+
+            @Override
+            public void bindDataToCalendarView(SingleRowCalendarAdapter.CalendarViewHolder holder, Date date, int position, boolean isSelected) {
+                TextView tvDay = holder.itemView.findViewById(R.id.tv_day);
+                TextView tvWeek = holder.itemView.findViewById(R.id.tv_week);
+                tvDay.setText(getDayNumber(date));
+                tvWeek.setText(getDay3LettersName(date));
+            }
+
+            private String getDayNumber(Date date) {
+                SimpleDateFormat sdf = new SimpleDateFormat("d", Locale.getDefault());
+                return sdf.format(date);
+            }
+
+            private String getDay3LettersName(Date date) {
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE", Locale.getDefault());
+                return sdf.format(date);
+            }
+        };
+
+        CalendarChangesObserver rowCalendarChangesObserver = new CalendarChangesObserver() {
+            @Override
+            public void whenWeekMonthYearChanged(@NonNull String s, @NonNull String s1, @NonNull String s2, @NonNull String s3, @NonNull Date date) {
+
+            }
+
+            @Override
+            public void whenSelectionRestored() {
+
+            }
+
+            @Override
+            public void whenSelectionChanged(boolean isSelected, int position, Date date) {
+                if (isSelected) {
+                    saveToDoList(selectedDate);
+                    selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
+                    loadToDoList(selectedDate);
+                }
+            }
+
+            @Override
+            public void whenCalendarScrolled(int dx, int dy) {
+                // Handle calendar scrolled event if needed
+            }
+
+            @Override
+            public void whenSelectionRefreshed() {
+                // Handle selection refreshed event if needed
+            }
+        };
+
+        CalendarSelectionManager rowSelectionManager = new CalendarSelectionManager() {
+            @Override
+            public boolean canBeItemSelected(int position, Date date) {
+                return true;
+            }
+        };
+
+        singleRowCalendar.setCalendarViewManager(rowCalendarManager);
+        singleRowCalendar.setCalendarChangesObserver(rowCalendarChangesObserver);
+        singleRowCalendar.setCalendarSelectionManager(rowSelectionManager);
+        singleRowCalendar.setDates(getFutureDatesOfCurrentMonth());
+        singleRowCalendar.init();
+        Log.d("ToDoFragment", "Hello");
+
+        // Set initial selection to today or 1st of the month
+        setInitialSelection();
+    }
+
+    private void setInitialSelection() {
+        Calendar today = Calendar.getInstance();
+        Date targetDate;
+        if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) && calendar.get(Calendar.MONTH) == today.get(Calendar.MONTH)) {
+            // If the selected month and year are the same as the current month and year, set the date to today
+            targetDate = today.getTime();
+            Log.d("ToDoFragment", "Setting initial selection to today: " + targetDate.toString());
+            calendar.set(Calendar.DAY_OF_MONTH, today.get(Calendar.DAY_OF_MONTH));
+            singleRowCalendar.select(today.get(Calendar.DAY_OF_MONTH)-1);
+        } else {
+            // Otherwise, set the date to the 1st of the selected month
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            singleRowCalendar.select(0);
+            targetDate = calendar.getTime();
+            Log.d("ToDoFragment", "Setting initial selection to 1st of the month: " + targetDate.toString());
+        }
+    }
+
+    private void setUpMonthYearDisplay() {
+        updateMonthYearDisplay();
+    }
+
+    private void setUpMonthYearPicker() {
+        View.OnClickListener listener = v -> {
+            MonthPickerDialog.Builder builder = new MonthPickerDialog.Builder(getContext(), (selectedMonth, selectedYear) -> {
+                calendar.set(Calendar.MONTH, selectedMonth);
+                calendar.set(Calendar.YEAR, selectedYear);
+                updateCalendar();
+            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+
+            builder.setActivatedMonth(calendar.get(Calendar.MONTH))
+                    .setMinYear(1990)
+                    .setActivatedYear(calendar.get(Calendar.YEAR))
+                    .setMaxYear(2030)
+                    .setTitle("Select Month and Year")
+                    .build()
+                    .show();
+        };
+
+        monthYear.setOnClickListener(listener);
+    }
+
+    private void updateMonthYearDisplay() {
+        SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM", Locale.getDefault());
+        SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy", Locale.getDefault());
+
+        String currentMonth = monthFormat.format(calendar.getTime());
+        String currentYear = yearFormat.format(calendar.getTime());
+
+        tvMonth.setText(currentMonth);
+        tvYear.setText(currentYear);
+    }
+
+    private void updateCalendar() {
+        Calendar today = Calendar.getInstance();
+
+        updateMonthYearDisplay();
+        singleRowCalendar.setDates(getFutureDatesOfCurrentMonth());
+        singleRowCalendar.init();
+
+        setInitialSelection();
+
+        selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.getTime());
+        loadToDoList(selectedDate);
+    }
+
+    private List<Date> getFutureDatesOfCurrentMonth() {
+        currentMonth = calendar.get(Calendar.MONTH);
+        return getDates(new ArrayList<>());
+    }
+
+    private List<Date> getDates(List<Date> list) {
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        list.add(calendar.getTime());
+        while (currentMonth == calendar.get(Calendar.MONTH)) {
+            calendar.add(Calendar.DATE, 1);
+            if (currentMonth == calendar.get(Calendar.MONTH)) {
+                list.add(calendar.getTime());
+            }
+        }
+        calendar.add(Calendar.DATE, -1);
+        return list;
     }
 
     private void setUpToggle() {
@@ -138,7 +318,7 @@ public class ToDoFragment extends Fragment {
 
     private String getCurrentDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        return sdf.format(new Date(calendarView.getDate()));
+        return sdf.format(new Date());
     }
 
     private void showAddToDoDialog() {
@@ -264,5 +444,19 @@ public class ToDoFragment extends Fragment {
                 saveToDoList(selectedDate);
             }
         });
+    }
+
+    private List<String> getContactNames() {
+        List<String> contactList = new ArrayList<>();
+        Cursor cursor = requireActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                String name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                contactList.add(name);
+            }
+            cursor.close();
+        }
+        return contactList;
     }
 }

@@ -1,9 +1,32 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.LifeSync" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <item name="android:fontFamily">@font/notosans</item>
+    <style name="Theme.LifeSync" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/color_2</item>
+        <item name="colorPrimaryVariant">@color/color_3</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/color_4</item>
+        <item name="colorSecondaryVariant">@color/color_3</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <item name="android:statusBarColor">@color/color_3</item>
+        <item name="android:navigationBarColor">@color/color_3</item>
+        <item name="android:textColorPrimary">@color/primaryTextColor</item>
+        <item name="android:textColorSecondary">@color/inactive_text</item>
+        <item name="android:windowBackground">@color/white</item>
     </style>
 
-    <style name="Theme.LifeSync" parent="Base.Theme.LifeSync" />
+    <style name="MonthPickerDialogStyle">
+        <item name="monthBgColor">@color/white</item>
+        <item name="monthBgSelectedColor">@color/color_2</item>
+        <item name="monthFontColorSelected">@color/white</item>
+        <item name="monthFontColorNormal">@android:color/black</item>
+        <item name="monthFontColorDisabled">@android:color/darker_gray</item>
+
+        <item name="headerBgColor">@color/color_2</item>
+        <item name="headerFontColorSelected">#fff</item>
+        <item name="headerFontColorNormal">#85FFFFFF</item>
+        <item name="headerTitleColor">#fff</item>
+
+        <item name="dialogActionButtonColor">@color/color_2</item>
+    </style>
 </resources>
