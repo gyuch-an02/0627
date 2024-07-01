@@ -39,7 +39,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".contacts.ContactActivity" />
+        <activity android:name=".contacts.AddContactActivity" />
+
+        <activity android:name=".contacts.ModifyContactActivity" />
 
     </application>
 

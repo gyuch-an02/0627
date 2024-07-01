@@ -32,6 +32,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 
@@ -99,7 +101,6 @@ public class ToDoFragment extends Fragment {
             public void afterTextChanged(Editable s) { }
         });
 
-        setUpDiaryTextWatcher();
 
         return view;
     }
@@ -135,8 +136,6 @@ public class ToDoFragment extends Fragment {
         todoContainer.setVisibility(View.GONE);
         addTodoButton.setVisibility(View.GONE);
         diaryEditText.setVisibility(View.VISIBLE);
-
-        loadToDoList(selectedDate);
 
         textTodo.setOnClickListener(v -> activateTodo());
         textDiary.setOnClickListener(null); // No action for the activated text
@@ -232,9 +231,7 @@ public class ToDoFragment extends Fragment {
     private void updateToDoContainer() {
         todoContainer.removeAllViews();
         if (toDoList.isEmpty()) {
-            if (todoContainer.getVisibility() == View.VISIBLE) {
-                emptyTextView.setVisibility(View.VISIBLE);
-            }
+            emptyTextView.setVisibility(View.VISIBLE);
             isTodoEmpty = Boolean.TRUE;
         } else {
             emptyTextView.setVisibility(View.GONE);
@@ -331,22 +328,4 @@ public class ToDoFragment extends Fragment {
         adapter.notifyDataSetChanged(); // 어댑터에 데이터 변경을 알립니다.
     }
 
-    private void setUpDiaryTextWatcher() {
-        diaryEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // No action needed before text changes
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // No action needed while text is changing
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                saveToDoList(selectedDate);
-            }
-        });
-    }
 }
