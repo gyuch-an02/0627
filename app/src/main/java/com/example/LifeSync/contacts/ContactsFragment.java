@@ -157,14 +157,4 @@ public class ContactsFragment extends Fragment {
             return "#";
         }
     }
-
-    public static List<String> getContactNames() {
-        List<String> contactNames = new ArrayList<>();
-        for (Object item : contactsAndHeaders) {
-            if (item instanceof ContactsAdapter.Contact) {
-                contactNames.add(((ContactsAdapter.Contact) item).getName());
-            }
-        }
-        return contactNames;
-    }
 }

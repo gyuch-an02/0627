@@ -1,5 +1,6 @@
 package com.example.LifeSync.todos;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -452,7 +453,7 @@ public class ToDoFragment extends Fragment {
 
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                String name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                 contactList.add(name);
             }
             cursor.close();
