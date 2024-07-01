@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -64,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
         ViewPager2 viewPager = findViewById(R.id.viewpager);
         viewPager.setAdapter(new MyPagerAdapter(this));
+        viewPager.setUserInputEnabled(false);
 
         TabLayout tabLayout = findViewById(R.id.store_fragment_tablayout);
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {

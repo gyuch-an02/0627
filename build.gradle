@@ -1,0 +1,15 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath libs.gradle // Adjust version as needed
+        classpath libs.kotlin.gradle.plugin // Adjust version as needed
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory.dir("generted/querydsl").get().asFile
+}
