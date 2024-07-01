@@ -1,4 +1,4 @@
-package com.example.LifeSync;
+package com.example.DailyTag;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -18,9 +18,9 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.LifeSync.contacts.ContactsFragment;
-import com.example.LifeSync.photos.PhotosFragment;
-import com.example.LifeSync.todos.ToDoFragment;
+import com.example.DailyTag.contacts.ContactsFragment;
+import com.example.DailyTag.photos.PhotosFragment;
+import com.example.DailyTag.todos.ToDoFragment;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 

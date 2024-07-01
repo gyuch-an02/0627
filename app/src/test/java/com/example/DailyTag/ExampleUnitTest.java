@@ -1,4 +1,4 @@
-package com.example.LifeSync;
+package com.example.DailyTag;
 
 import org.junit.Test;
 

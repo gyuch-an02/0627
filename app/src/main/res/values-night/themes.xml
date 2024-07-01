@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.LifeSync" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.DailyTag" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/color_2</item>
         <item name="colorPrimaryVariant">@color/color_3</item>

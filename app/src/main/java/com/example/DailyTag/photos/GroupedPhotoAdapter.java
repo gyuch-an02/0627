@@ -1,4 +1,4 @@
-package com.example.LifeSync.photos;
+package com.example.DailyTag.photos;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.LifeSync.R;
+import com.example.DailyTag.R;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.example.LifeSync.photos;
+package com.example.DailyTag.photos;
 
 import android.Manifest;
 import android.app.DatePickerDialog;
@@ -23,7 +23,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.LifeSync.R;
+import com.example.DailyTag.R;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

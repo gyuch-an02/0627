@@ -1,4 +1,4 @@
-package com.example.LifeSync.todos;
+package com.example.DailyTag.todos;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -20,9 +20,9 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.example.LifeSync.R;
+import com.example.DailyTag.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.example.LifeSync.contacts.ContactsFragment;
+import com.example.DailyTag.contacts.ContactsFragment;
 import com.michalsvec.singlerowcalendar.calendar.CalendarChangesObserver;
 import com.michalsvec.singlerowcalendar.calendar.CalendarViewManager;
 import com.michalsvec.singlerowcalendar.calendar.SingleRowCalendar;

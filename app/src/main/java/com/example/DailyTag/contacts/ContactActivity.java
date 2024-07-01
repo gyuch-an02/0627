@@ -1,4 +1,4 @@
-package com.example.LifeSync.contacts;
+package com.example.DailyTag.contacts;
 
 import android.Manifest;
 import android.content.ContentProviderOperation;
@@ -34,7 +34,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.example.LifeSync.R;
+import com.example.DailyTag.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

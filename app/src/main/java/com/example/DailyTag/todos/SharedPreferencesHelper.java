@@ -1,4 +1,4 @@
-package com.example.LifeSync.todos;
+package com.example.DailyTag.todos;
 
 import android.content.Context;
 import android.content.SharedPreferences;

@@ -1,4 +1,4 @@
-package com.example.LifeSync.photos;
+package com.example.DailyTag.photos;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,7 +14,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.LifeSync.R;
+import com.example.DailyTag.R;
 
 import java.io.File;
 import java.util.Date;

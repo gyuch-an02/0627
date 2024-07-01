@@ -1,4 +1,4 @@
-package com.example.LifeSync.contacts;
+package com.example.DailyTag.contacts;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -24,7 +24,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.widget.SearchView;
 
-import com.example.LifeSync.R;
+import com.example.DailyTag.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.InputStream;

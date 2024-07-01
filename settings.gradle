@@ -23,5 +23,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = 'LifeSync'
+rootProject.name = 'DailyTag'
 include ':app'

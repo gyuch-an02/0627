@@ -1,4 +1,4 @@
-package com.example.LifeSync.photos;
+package com.example.DailyTag.photos;
 
 public class PhotoItem {
     public static final int TYPE_HEADER = 0;

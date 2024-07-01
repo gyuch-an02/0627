@@ -1,9 +1,8 @@
-package com.example.LifeSync.contacts;
+package com.example.DailyTag.contacts;
 
 import android.content.ContentUris;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -23,7 +22,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
-import com.example.LifeSync.R;
+import com.example.DailyTag.R;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

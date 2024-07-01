@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    namespace = "com.example.LifeSync"
+    namespace = "com.example.DailyTag"
     compileSdkVersion 34
 
     defaultConfig {
-        applicationId "com.example.LifeSync"
-        minSdkVersion 31
+        applicationId "com.example.DailyTag"
+        minSdkVersion 24
         targetSdkVersion 34
         versionCode 1
         versionName "1.0"
