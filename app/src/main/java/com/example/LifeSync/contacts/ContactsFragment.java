@@ -29,10 +29,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 
 public class ContactsFragment extends Fragment {
 
@@ -109,7 +109,7 @@ public class ContactsFragment extends Fragment {
         contactsAndHeaders.clear();
         Cursor cursor = requireActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
 
-        Map<String, List<ContactsAdapter.Contact>> groupedContacts = new LinkedHashMap<>();
+        Map<String, List<ContactsAdapter.Contact>> groupedContacts = new TreeMap<>();
 
         if (cursor != null) {
             while (cursor.moveToNext()) {
@@ -128,10 +128,10 @@ public class ContactsFragment extends Fragment {
         }
 
         for (Map.Entry<String, List<ContactsAdapter.Contact>> entry : groupedContacts.entrySet()) {
+            // Add header and contacts to the list
             contactsAndHeaders.add(entry.getKey()); // Add header
             contactsAndHeaders.addAll(entry.getValue()); // Add contacts
         }
-
         adapter.notifyDataSetChanged();
     }
 
