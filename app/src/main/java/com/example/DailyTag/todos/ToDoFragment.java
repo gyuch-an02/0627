@@ -21,11 +21,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.DailyTag.R;
 import com.example.DailyTag.utils.TagUtils;
 import com.example.DailyTag.utils.TagManager;
 import com.example.DailyTag.contacts.ContactManager;
+import com.example.DailyTag.utils.TagViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.michalsvec.singlerowcalendar.calendar.CalendarChangesObserver;
 import com.michalsvec.singlerowcalendar.calendar.CalendarViewManager;
@@ -65,6 +67,7 @@ public class ToDoFragment extends Fragment {
     private Calendar calendar;
     private int currentMonth;
     private ArrayAdapter<String> contactNameAdapter;
+    private TagViewModel tagViewModel;
     private LinearLayout diaryTagContainer;
     private LinearLayout todoTagContainer;
     private TextWatcher textWatcher;
@@ -115,14 +118,14 @@ public class ToDoFragment extends Fragment {
         List<String> contactNames = ContactManager.getContactNames(requireContext());
         contactNameAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, contactNames);
         toDoList = new ArrayList<>();
-        toDoList = new ArrayList<>();
         undoStack = new Stack<>();
         redoStack = new Stack<>();
         selectedDate = getCurrentDate();
-        tagManager = TagManager.getInstance();
+        tagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
         loadToDoDiary(selectedDate);
         loadTagList(selectedDate);
     }
+
 
     private void setUpSingleRowCalendar() {
         calendar = Calendar.getInstance();
@@ -305,7 +308,6 @@ public class ToDoFragment extends Fragment {
         }
     }
 
-    @SuppressLint("SetTextI18n")
     private void handleAutoCompleteItemClick(AutoCompleteTextView autoCompleteTextView, String selectedTag, boolean isDiary, ToDoItem toDoItem) {
         if (selectedTag != null) {
             int cursorPosition = autoCompleteTextView.getSelectionStart();
@@ -327,15 +329,17 @@ public class ToDoFragment extends Fragment {
                 autoCompleteTextView.addTextChangedListener(textWatcher);
 
                 if (isDiary) {
-                    tagManager.addTag(selectedDate + "_diary", selectedTag);
+                    tagViewModel.addTag(selectedTag);
                     renewTagLayout(diaryTagContainer, selectedDate + "_diary");
                     diaryTagContainer.setVisibility(View.VISIBLE);
                 } else if (toDoItem != null) {
-                    tagManager.addTag(toDoItem.getId(), selectedTag);
+                    tagViewModel.addTag(selectedTag);
+                    renewTagLayout(todoTagContainer, toDoItem.getId());
                 }
             }
         }
     }
+
 
     private void handleAutoCompleteFocusChange(AutoCompleteTextView autoCompleteTextView, ArrayAdapter<String> adapter, boolean hasFocus) {
         if (!hasFocus) {
@@ -396,37 +400,31 @@ public class ToDoFragment extends Fragment {
         }
     }
 
-    private void renewTagLayout(LinearLayout tagContainer, String key) {
-        Set<String> tagSet = tagManager.getTags(key);
-        tagContainer.removeAllViews();
-        if (tagSet.isEmpty()) {
-            Log.d("renewTagLayout", "TagList empty for key: " + key);
-            tagContainer.setVisibility(View.GONE);
-        } else {
-            Log.d("renewTagLayout", "TagList not empty for key: " + key);
-            tagContainer.setVisibility(View.VISIBLE);
-            TagUtils.renewTagLayout(requireContext(), tagContainer, tagSet, v -> {
-                String tag = ((TextView) ((View) v.getParent()).findViewById(R.id.tagTextView)).getText().toString();
-                tagManager.removeTag(key, tag);
-                renewTagLayout(tagContainer, key);
-            });
-        }
-        TagUtils.addAddTagButton(requireContext(), tagContainer, tagSet, v -> {
-            String tag = ((TextView) ((View) v.getParent()).findViewById(R.id.tagTextView)).getText().toString();
-            tagManager.removeTag(key, tag);
-            renewTagLayout(tagContainer, key);
+    private void renewTagLayout(LinearLayout tagContainer, String tagSetId) {
+        TagUtils.renewTagLayout(requireContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, v -> {
+            String tag = ((TextView) v.findViewById(R.id.tagTextView)).getText().toString();
+            tagViewModel.removeTag(tag);
         });
     }
 
     private void loadTagList(String date) {
         Log.d("loadTagList", "Loading tag list of " + date);
-        renewTagLayout(diaryTagContainer, date + "_diary");
+        Set<String> diaryTags = SharedPreferencesHelper.loadDiaryTags(requireContext(), date);
+        tagViewModel.setTags(diaryTags);
+        renewTagLayout(diaryTagContainer, selectedDate + "_diary");
+        diaryTagContainer.setVisibility(View.VISIBLE);
+
+        Map<String, Set<String>> todoTagsMap = SharedPreferencesHelper.loadToDoTags(requireContext(), date);
+
+        checkAndInitializeToDoList();
 
         for (ToDoItem item : toDoList) {
-            renewTagLayout(todoTagContainer, item.getId());
+            Set<String> tags = todoTagsMap.get(item.getId());
+            if (tags != null) {
+                tagViewModel.setTags(tags);
+                renewTagLayout(todoTagContainer, item.getId());
+            }
         }
-
-        updateToDoContainer();
     }
 
     private void updateToDoContainer() {

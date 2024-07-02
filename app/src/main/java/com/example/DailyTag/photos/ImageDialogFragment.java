@@ -11,11 +11,15 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
+
 import com.example.DailyTag.R;
 import com.example.DailyTag.utils.TagUtils;
+import com.example.DailyTag.utils.TagViewModel;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,6 +32,9 @@ public class ImageDialogFragment extends DialogFragment {
 
     private static final String ARG_IMAGE_PATH = "image_path";
     private static final String ARG_TAGS = "image_tags";
+
+    private TagViewModel tagViewModel;
+    private LinearLayout tagContainer;
 
     public static ImageDialogFragment newInstance(String imagePath, Set<String> tags) {
         ImageDialogFragment fragment = new ImageDialogFragment();
@@ -46,7 +53,7 @@ public class ImageDialogFragment extends DialogFragment {
         ImageView imageView = view.findViewById(R.id.enlargedImageView);
         TextView imageNameTextView = view.findViewById(R.id.imageNameTextView);
         TextView imageDateTextView = view.findViewById(R.id.imageDateTextView);
-        LinearLayout tagContainer = view.findViewById(R.id.tagContainer);
+        tagContainer = view.findViewById(R.id.tagContainer);
 
         if (getArguments() != null) {
             String imagePath = getArguments().getString(ARG_IMAGE_PATH);
@@ -64,7 +71,14 @@ public class ImageDialogFragment extends DialogFragment {
 
             ArrayList<String> tags = getArguments().getStringArrayList(ARG_TAGS);
             if (tags != null && !tags.isEmpty()) {
-                TagUtils.renewTagLayout(getContext(), tagContainer, new HashSet<>(tags), null);
+                tagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
+                tagViewModel.getTagSet().observe(getViewLifecycleOwner(), tagSet -> {
+                    TagUtils.renewTagLayout(getContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, v -> {
+                        tagViewModel.removeTag(((TextView) v.findViewById(R.id.tagTextView)).getText().toString());
+                    });
+                });
+
+                tagViewModel.setTags(new HashSet<>(tags)); // Use the new setTags method
             }
         }
 
