@@ -2,17 +2,14 @@ package com.example.DailyTag.todos;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 
 public class SharedPreferencesHelper {
 
@@ -52,14 +49,17 @@ public class SharedPreferencesHelper {
     // Load the diary content for a specific date
     public static String loadDiaryContent(Context context, String date) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getString(DIARY_KEY + date, "");
+        Object data = prefs.getAll().get(DIARY_KEY + date);
+        if (data instanceof String) {
+            return (String) data;
+        }
+        return "";
     }
 
     // Save the diary tags for a specific date
     public static void saveDiaryTags(Context context, String date, Set<String> tags) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        Log.d("saveDiaryTags", "Saving DiaryTagList of " + DIARY_TAGS_KEY + date + " : " + tags);
         editor.putStringSet(DIARY_TAGS_KEY + date, tags);
         editor.apply();
     }
@@ -87,5 +87,11 @@ public class SharedPreferencesHelper {
         String json = prefs.getString(TODO_TAGS_KEY + date, null);
         Type type = new TypeToken<Map<String, Set<String>>>() {}.getType();
         return json == null ? new HashMap<>() : gson.fromJson(json, type);
+    }
+
+    // Load all entries from SharedPreferences
+    public static Map<String, ?> getAllEntries(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getAll();
     }
 }
