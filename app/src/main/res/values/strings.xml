@@ -17,4 +17,5 @@
     <string name="redo_label">Redo</string>
     <string name="at_label">\@</string>
     <string name="delete_tag_description">Delete Tag</string>
+    <string name="add_label">\ +\ </string>
 </resources>

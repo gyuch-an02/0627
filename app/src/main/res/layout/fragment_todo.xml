@@ -152,7 +152,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                app:flexWrap="wrap"
                 android:padding="8dp"
                 android:visibility="gone"/>
         </LinearLayout>

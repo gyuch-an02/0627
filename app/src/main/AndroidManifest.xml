@@ -31,6 +31,7 @@
 
         <activity
             android:name=".SplashActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -40,12 +41,13 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:windowSoftInputMode="adjustPan"
+            android:windowSoftInputMode="stateHidden|adjustPan"
             android:exported="true">
         </activity>
-        <activity android:name=".contacts.ContactActivity" />
-        <activity android:name=".contacts.ContactDetailsActivity" />
-
+        <activity android:name=".contacts.ContactActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
+        <activity android:name=".contacts.ContactDetailsActivity"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
 
     </application>
 

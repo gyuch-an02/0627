@@ -1,5 +1,6 @@
 package com.example.DailyTag.photos;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
@@ -12,21 +13,27 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.DailyTag.R;
+import com.example.DailyTag.utils.TagManager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class GroupedPhotoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
     private List<PhotoItem> itemList;
-    private FragmentManager fragmentManager;
+    private final FragmentManager fragmentManager;
+    private final TagManager tagManager;
+    private Map<String, Set<String>> photoTags;
 
     public GroupedPhotoAdapter(Map<String, List<String>> groupedPhotos, FragmentManager fragmentManager) {
         this.fragmentManager = fragmentManager;
+        this.tagManager = TagManager.getInstance();
+        updateData(groupedPhotos);
         updateData(groupedPhotos);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void updateData(Map<String, List<String>> groupedPhotos) {
         itemList = new ArrayList<>();
         for (Map.Entry<String, List<String>> entry : groupedPhotos.entrySet()) {
@@ -36,6 +43,10 @@ public class GroupedPhotoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
         }
         notifyDataSetChanged();
+    }
+
+    public void setPhotoTags(Map<String, Set<String>> photoTags) {
+        this.photoTags = photoTags;
     }
 
     @Override
@@ -73,7 +84,8 @@ public class GroupedPhotoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
 
             photoViewHolder.imageView.setOnClickListener(v -> {
-                ImageDialogFragment.newInstance(photoPath)
+                Set<String> tags = tagManager.getTags(photoPath);
+                ImageDialogFragment.newInstance(photoPath, tags)
                         .show(fragmentManager, "image_dialog");
             });
         }

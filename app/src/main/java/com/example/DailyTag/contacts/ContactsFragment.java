@@ -2,21 +2,15 @@ package com.example.DailyTag.contacts;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -109,24 +103,15 @@ public class ContactsFragment extends Fragment {
     @SuppressLint("Range")
     public void loadContacts() {
         contactsAndHeaders.clear();
-        Cursor cursor = requireActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
-
+        List<Contact> contacts = ContactManager.getContacts(requireContext());
         Map<String, List<Contact>> groupedContacts = new TreeMap<>();
 
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                long id = cursor.getLong(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID));
-                String name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                String phoneNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                Bitmap profileImage = loadContactPhoto(id);
-                String initial = getInitialGroup(name);
-
-                if (!groupedContacts.containsKey(initial)) {
-                    groupedContacts.put(initial, new ArrayList<>());
-                }
-                Objects.requireNonNull(groupedContacts.get(initial)).add(new Contact(id, name, phoneNumber, profileImage));
+        for (Contact contact : contacts) {
+            String initial = ContactManager.getInitialGroup(contact.getName());
+            if (!groupedContacts.containsKey(initial)) {
+                groupedContacts.put(initial, new ArrayList<>());
             }
-            cursor.close();
+            Objects.requireNonNull(groupedContacts.get(initial)).add(contact);
         }
 
         for (Map.Entry<String, List<Contact>> entry : groupedContacts.entrySet()) {
@@ -134,83 +119,7 @@ public class ContactsFragment extends Fragment {
             contactsAndHeaders.add(entry.getKey()); // Add header
             contactsAndHeaders.addAll(entry.getValue()); // Add contacts
         }
+
         adapter.notifyDataSetChanged();
-    }
-
-    private Bitmap loadContactPhoto(long contactId) {
-        Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId);
-        InputStream photoInputStream = ContactsContract.Contacts.openContactPhotoInputStream(requireActivity().getContentResolver(), contactUri);
-        return photoInputStream != null ? BitmapFactory.decodeStream(photoInputStream) : null;
-    }
-
-    private String getInitialGroup(String name) {
-        char firstChar = name.charAt(0);
-        if (firstChar >= 0xAC00 && firstChar <= 0xD7A3) {
-            // Hangul character
-            int base = firstChar - 0xAC00;
-            int initialConsonantIndex = base / (21 * 28);
-            char[] initialConsonants = {'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'};
-            return String.valueOf(initialConsonants[initialConsonantIndex]);
-        } else if (Character.isLetter(firstChar)) {
-            // Alphabet character
-            return String.valueOf(firstChar).toUpperCase();
-        } else {
-            // Other characters
-            return "#";
-        }
-    }
-
-    public static List<String> getContactNames() {
-        List<String> contactNames = new ArrayList<>();
-        for (Object item : contactsAndHeaders) {
-            if (item instanceof Contact) {
-                contactNames.add(((Contact) item).getName());
-            }
-        }
-        return contactNames;
-    }
-
-    public static List<Contact> getContacts(Context context) {
-        List<Contact> contacts = new ArrayList<>();
-        ContentResolver contentResolver = context.getContentResolver();
-        Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-
-        if (cursor != null && cursor.getCount() > 0) {
-            while (cursor.moveToNext()) {
-                String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-                String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-
-                if (cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0) {
-                    Cursor phoneCursor = contentResolver.query(
-                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                            null,
-                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                            new String[]{id},
-                            null);
-
-                    if (phoneCursor != null) {
-                        while (phoneCursor.moveToNext()) {
-                            String phoneNumber = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                            Bitmap profileImage = getContactPhoto(context, id);
-
-                            contacts.add(new Contact(Long.parseLong(id), name, phoneNumber, profileImage));
-                        }
-                        phoneCursor.close();
-                    }
-                }
-            }
-            cursor.close();
-        }
-
-        return contacts;
-    }
-
-    private static Bitmap getContactPhoto(Context context, String contactId) {
-        Uri contactUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, contactId);
-        InputStream photoStream = ContactsContract.Contacts.openContactPhotoInputStream(context.getContentResolver(), contactUri);
-        if (photoStream != null) {
-            return BitmapFactory.decodeStream(photoStream);
-        }
-        return null;
     }
 }

@@ -4,7 +4,6 @@ import android.content.ContentUris;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -13,7 +12,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.provider.ContactsContract;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,10 +22,11 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AlertDialog;
+
 import com.example.DailyTag.R;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -119,8 +118,6 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
                 intent.putExtra("CONTACT_ID", contact.getId());
                 context.startActivity(intent);
             });
-
-
         }
 
         return convertView;
@@ -181,17 +178,7 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
     }
 
     private String getHeaderForContact(Contact contact) {
-        char firstChar = contact.getName().charAt(0);
-        if (firstChar >= 0xAC00 && firstChar <= 0xD7A3) {
-            int base = firstChar - 0xAC00;
-            int initialConsonantIndex = base / (21 * 28);
-            char[] initialConsonants = {'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'};
-            return String.valueOf(initialConsonants[initialConsonantIndex]);
-        } else if (Character.isLetter(firstChar)) {
-            return String.valueOf(firstChar).toUpperCase();
-        } else {
-            return "#";
-        }
+        return ContactManager.getInitialGroup(contact.getName());
     }
 
     private Bitmap getRoundedBitmap(Bitmap bitmap) {
@@ -207,11 +194,10 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
 
         final Rect rect = new Rect(0, 0, width, height);
         final RectF rectF = new RectF(rect);
-        float roundPx = radius;
 
         canvas.drawARGB(0, 0, 0, 0);
         paint.setColor(0xFF000000);
-        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+        canvas.drawRoundRect(rectF, (float) radius, (float) radius, paint);
 
         paint.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
         canvas.drawBitmap(bitmap, rect, rect, paint);
@@ -277,6 +263,4 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
     public interface ContactActionListener {
         void onContactAction(Contact contact);
     }
-
-
 }

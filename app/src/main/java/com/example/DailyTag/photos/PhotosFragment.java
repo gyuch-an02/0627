@@ -28,34 +28,37 @@ import com.example.DailyTag.R;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public class PhotosFragment extends Fragment {
 
     private static final int PERMISSION_REQUEST_CODE = 1;
-    private RecyclerView recyclerView;
     private GroupedPhotoAdapter groupedPhotoAdapter;
     private LinkedHashMap<String, List<String>> groupedPhotos;
+    private Map<String, Set<String>> photoTags; // Add a field for photo tags
     private Calendar startDate, endDate;
 
     private Button todayButton, last7DaysButton, last30DaysButton, allButton;
-    private ImageButton searchButton;
     private LinearLayout dateRangeLayout;
     private EditText startDateEditText, endDateEditText;
-    private Button confirmButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_photos, container, false);
 
-        recyclerView = view.findViewById(R.id.recyclerView);
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
 
         // Use GridLayoutManager
-        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 4); // 4 columns
+        GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), 4); // 4 columns
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
@@ -65,18 +68,20 @@ public class PhotosFragment extends Fragment {
         recyclerView.setLayoutManager(layoutManager);
 
         groupedPhotos = new LinkedHashMap<>();
+        photoTags = new HashMap<>(); // Initialize the photo tags map
         groupedPhotoAdapter = new GroupedPhotoAdapter(groupedPhotos, getChildFragmentManager());
+        groupedPhotoAdapter.setPhotoTags(photoTags); // Set photo tags
         recyclerView.setAdapter(groupedPhotoAdapter);
 
         todayButton = view.findViewById(R.id.todayButton);
         last7DaysButton = view.findViewById(R.id.last7DaysButton);
         last30DaysButton = view.findViewById(R.id.last30DaysButton);
         allButton = view.findViewById(R.id.allButton);
-        searchButton = view.findViewById(R.id.searchButton);
+        ImageButton searchButton = view.findViewById(R.id.searchButton);
         dateRangeLayout = view.findViewById(R.id.dateRangeLayout);
         startDateEditText = view.findViewById(R.id.startDateEditText);
         endDateEditText = view.findViewById(R.id.endDateEditText);
-        confirmButton = view.findViewById(R.id.confirmButton);
+        Button confirmButton = view.findViewById(R.id.confirmButton);
 
         todayButton.setOnClickListener(v -> {
             filterByToday();
@@ -113,9 +118,9 @@ public class PhotosFragment extends Fragment {
             }
         });
 
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(),
+            ActivityCompat.requestPermissions(requireActivity(),
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
         } else {
             loadPhotos();
@@ -137,13 +142,13 @@ public class PhotosFragment extends Fragment {
 
     private void setButtonColors(Button activeButton) {
         // 모든 버튼을 회색으로 설정
-        todayButton.setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
-        last7DaysButton.setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
-        last30DaysButton.setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
-        allButton.setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
+        todayButton.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
+        last7DaysButton.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
+        last30DaysButton.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
+        allButton.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.darker_gray));
 
         // 선택된 버튼을 검정색으로 설정
-        activeButton.setTextColor(ContextCompat.getColor(getContext(), android.R.color.black));
+        activeButton.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.black));
     }
 
     private void filterByToday() {
@@ -175,7 +180,7 @@ public class PhotosFragment extends Fragment {
         int month = c.get(Calendar.MONTH);
         int day = c.get(Calendar.DAY_OF_MONTH);
 
-        DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(),
+        DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
                 (view, year1, monthOfYear, dayOfMonth) -> {
                     Calendar selectedDate = Calendar.getInstance();
                     selectedDate.set(year1, monthOfYear, dayOfMonth);
@@ -211,7 +216,7 @@ public class PhotosFragment extends Fragment {
     private void loadPhotos() {
         Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         String[] projection = {MediaStore.Images.Media.DATA, MediaStore.Images.Media.DATE_MODIFIED};
-        Cursor cursor = getContext().getContentResolver().query(uri, projection, null, null, MediaStore.Images.Media.DATE_MODIFIED + " DESC");
+        Cursor cursor = requireContext().getContentResolver().query(uri, projection, null, null, MediaStore.Images.Media.DATE_MODIFIED + " DESC");
 
         if (cursor != null) {
             int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
@@ -227,10 +232,17 @@ public class PhotosFragment extends Fragment {
                     groupedPhotos.put(date, new ArrayList<>());
                 }
                 groupedPhotos.get(date).add(photoPath);
+
+                // Adding dummy tags for demonstration purposes
+                Set<String> tags = new HashSet<>();
+                tags.add("SampleTag1");
+                tags.add("SampleTag2");
+                photoTags.put(photoPath, tags);
             }
             cursor.close();
         }
         groupedPhotoAdapter.updateData(groupedPhotos);
+        groupedPhotoAdapter.setPhotoTags(photoTags); // Set photo tags in the adapter
     }
 
     @Override
@@ -240,7 +252,7 @@ public class PhotosFragment extends Fragment {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 loadPhotos();
             } else {
-                Toast.makeText(getContext(), "Permission denied to read external storage", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Permission denied to read external storage", Toast.LENGTH_SHORT).show();
             }
         }
     }
