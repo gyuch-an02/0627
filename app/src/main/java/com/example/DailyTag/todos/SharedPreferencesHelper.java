@@ -8,16 +8,18 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
 
 public class SharedPreferencesHelper {
 
     private static final String PREFS_NAME = "todo_prefs";
     private static final String TODO_LIST_KEY = "todo_list_";
     private static final String DIARY_KEY = "diary_";
-    private static final String KEY_DIARY_TAGS = "diaryTags";
-    private static final String KEY_TODO_TAGS = "todoTags";
+    private static final String DIARY_TAGS_KEY = "diary_tags_";
+    private static final String TODO_TAGS_KEY = "todo_tags_";
 
     // Save the to-do list for a specific date
     public static void saveToDoList(Context context, String date, ArrayList<ToDoItem> toDoList) {
@@ -52,31 +54,36 @@ public class SharedPreferencesHelper {
         return prefs.getString(DIARY_KEY + date, "");
     }
 
-    // Save the diary tags
-    public static void saveDiaryTags(Context context, Set<String> tags) {
+    // Save the diary tags for a specific date
+    public static void saveDiaryTags(Context context, String date, Set<String> tags) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putStringSet(KEY_DIARY_TAGS, tags);
+        editor.putStringSet(DIARY_TAGS_KEY + date, tags);
         editor.apply();
     }
 
-    // Load the diary tags
-    public static Set<String> loadDiaryTags(Context context) {
+    // Load the diary tags for a specific date
+    public static Set<String> loadDiaryTags(Context context, String date) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getStringSet(KEY_DIARY_TAGS, new HashSet<>());
+        return prefs.getStringSet(DIARY_TAGS_KEY + date, new HashSet<>());
     }
 
-    // Save the to-do tags
-    public static void saveToDoTags(Context context, Set<String> tags) {
+    // Save the to-do tags for a specific date
+    public static void saveToDoTags(Context context, String date, Map<String, Set<String>> tags) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putStringSet(KEY_TODO_TAGS, tags);
+        Gson gson = new Gson();
+        String json = gson.toJson(tags);
+        editor.putString(TODO_TAGS_KEY + date, json);
         editor.apply();
     }
 
-    // Load the to-do tags
-    public static Set<String> loadToDoTags(Context context) {
+    // Load the to-do tags for a specific date
+    public static Map<String, Set<String>> loadToDoTags(Context context, String date) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getStringSet(KEY_TODO_TAGS, new HashSet<>());
+        Gson gson = new Gson();
+        String json = prefs.getString(TODO_TAGS_KEY + date, null);
+        Type type = new TypeToken<Map<String, Set<String>>>() {}.getType();
+        return json == null ? new HashMap<>() : gson.fromJson(json, type);
     }
 }
