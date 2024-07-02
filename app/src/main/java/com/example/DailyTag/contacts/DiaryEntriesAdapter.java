@@ -8,11 +8,13 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.DailyTag.R;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DiaryEntriesAdapter extends RecyclerView.Adapter<DiaryEntriesAdapter.DiaryEntryViewHolder> {
 
-    private List<String> diaryEntries = new ArrayList<>();
+    private List<Map.Entry<String, String>> diaryEntries = new ArrayList<>();
 
     @NonNull
     @Override
@@ -23,8 +25,9 @@ public class DiaryEntriesAdapter extends RecyclerView.Adapter<DiaryEntriesAdapte
 
     @Override
     public void onBindViewHolder(@NonNull DiaryEntryViewHolder holder, int position) {
-        String diaryEntry = diaryEntries.get(position);
-        holder.diaryEntryTextView.setText(diaryEntry);
+        Map.Entry<String, String> diaryEntry = diaryEntries.get(position);
+        holder.diaryContentTextView.setText(diaryEntry.getValue());
+        holder.diaryDateTextView.setText(diaryEntry.getKey());
     }
 
     @Override
@@ -32,17 +35,19 @@ public class DiaryEntriesAdapter extends RecyclerView.Adapter<DiaryEntriesAdapte
         return diaryEntries.size();
     }
 
-    public void setDiaryEntries(List<String> diaryEntries) {
+    public void setDiaryEntries(List<Map.Entry<String, String>> diaryEntries) {
         this.diaryEntries = diaryEntries;
         notifyDataSetChanged();
     }
 
     static class DiaryEntryViewHolder extends RecyclerView.ViewHolder {
-        TextView diaryEntryTextView;
+        TextView diaryContentTextView;
+        TextView diaryDateTextView;
 
         DiaryEntryViewHolder(@NonNull View itemView) {
             super(itemView);
-            diaryEntryTextView = itemView.findViewById(R.id.diaryEntryTextView);
+            diaryContentTextView = itemView.findViewById(R.id.diaryEntryContentTextView);
+            diaryDateTextView = itemView.findViewById(R.id.diaryEntryDateTextView);
         }
     }
 }

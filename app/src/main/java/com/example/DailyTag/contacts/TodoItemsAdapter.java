@@ -8,11 +8,13 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.DailyTag.R;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TodoItemsAdapter extends RecyclerView.Adapter<TodoItemsAdapter.TodoItemViewHolder> {
 
-    private List<String> todoItems = new ArrayList<>();
+    private List<Map.Entry<String, String>> todoItems = new ArrayList<>();
 
     @NonNull
     @Override
@@ -23,8 +25,9 @@ public class TodoItemsAdapter extends RecyclerView.Adapter<TodoItemsAdapter.Todo
 
     @Override
     public void onBindViewHolder(@NonNull TodoItemViewHolder holder, int position) {
-        String todoItem = todoItems.get(position);
-        holder.todoItemTextView.setText(todoItem);
+        Map.Entry<String, String> todoItem = todoItems.get(position);
+        holder.todoContentTextView.setText(todoItem.getValue());
+        holder.todoDateTextView.setText(todoItem.getKey());
     }
 
     @Override
@@ -32,17 +35,19 @@ public class TodoItemsAdapter extends RecyclerView.Adapter<TodoItemsAdapter.Todo
         return todoItems.size();
     }
 
-    public void setTodoItems(List<String> todoItems) {
+    public void setTodoItems(List<Map.Entry<String, String>> todoItems) {
         this.todoItems = todoItems;
         notifyDataSetChanged();
     }
 
     static class TodoItemViewHolder extends RecyclerView.ViewHolder {
-        TextView todoItemTextView;
+        TextView todoContentTextView;
+        TextView todoDateTextView;
 
         TodoItemViewHolder(@NonNull View itemView) {
             super(itemView);
-            todoItemTextView = itemView.findViewById(R.id.todoItemTextView);
+            todoContentTextView = itemView.findViewById(R.id.todoItemContentTextView);
+            todoDateTextView = itemView.findViewById(R.id.todoItemDateTextView);
         }
     }
 }
