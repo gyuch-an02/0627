@@ -126,7 +126,7 @@
 
             </LinearLayout>
 
-            <com.example.DailyTag.todos.DiaryAutoCompleteTextView
+            <com.example.DailyTag.todos.CustomAutoCompleteTextView
                 android:id="@+id/diaryAutoCompleteTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

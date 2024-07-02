@@ -14,7 +14,7 @@
         android:layout_gravity="center_horizontal"
         android:paddingBottom="16dp"/>
 
-    <AutoCompleteTextView
+    <com.example.DailyTag.todos.CustomAutoCompleteTextView
         android:id="@+id/todoAutoCompleteTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
