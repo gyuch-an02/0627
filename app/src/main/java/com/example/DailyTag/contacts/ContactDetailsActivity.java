@@ -1,5 +1,6 @@
 package com.example.DailyTag.contacts;
 
+import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,24 +10,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.DailyTag.R;
-import com.example.DailyTag.todos.SharedPreferencesHelper;
 import com.example.DailyTag.todos.ToDoItem;
+import com.example.DailyTag.utils.TagRepository;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ContactDetailsActivity extends AppCompatActivity {
 
     private ImageView profileImageView;
     private TextView nameTextView;
     private TextView phoneTextView;
-    private RecyclerView diaryEntriesRecyclerView;
-    private RecyclerView todoItemsRecyclerView;
-    private DiaryEntriesAdapter diaryEntriesAdapter;
-    private TodoItemsAdapter todoItemsAdapter;
+    private RecyclerView entriesRecyclerView;
+    private EntriesAdapter entriesAdapter;
     private String contactName;
 
     @Override
@@ -37,8 +32,7 @@ public class ContactDetailsActivity extends AppCompatActivity {
         profileImageView = findViewById(R.id.profileImageView);
         nameTextView = findViewById(R.id.nameTextView);
         phoneTextView = findViewById(R.id.phoneTextView);
-        diaryEntriesRecyclerView = findViewById(R.id.diaryEntriesRecyclerView);
-        todoItemsRecyclerView = findViewById(R.id.todoItemsRecyclerView);
+        entriesRecyclerView = findViewById(R.id.entriesRecyclerView);
 
         // Get the contact ID from the intent
         long contactId = getIntent().getLongExtra("CONTACT_ID", -1);
@@ -47,22 +41,18 @@ public class ContactDetailsActivity extends AppCompatActivity {
             loadContactDetails(contactId);
         }
 
-        // Set up RecyclerViews
-        diaryEntriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        todoItemsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        // Set up RecyclerView
+        entriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Initialize adapters
-        diaryEntriesAdapter = new DiaryEntriesAdapter();
-        todoItemsAdapter = new TodoItemsAdapter();
+        // Initialize adapter
+        entriesAdapter = new EntriesAdapter();
 
-        // Set adapters to RecyclerViews
-        diaryEntriesRecyclerView.setAdapter(diaryEntriesAdapter);
-        todoItemsRecyclerView.setAdapter(todoItemsAdapter);
+        // Set adapter to RecyclerView
+        entriesRecyclerView.setAdapter(entriesAdapter);
 
-        // Load diary entries and to-do items
+        // Load entries
         if (contactName != null) {
-            loadDiaryEntries(this, contactName);
-            loadTodoItems(this, contactName);
+            loadEntries(this, contactName);
         }
     }
 
@@ -79,51 +69,47 @@ public class ContactDetailsActivity extends AppCompatActivity {
         phoneTextView.setText(contact.getPhoneNumber());
     }
 
-    private void loadDiaryEntries(Context context, String contactName) {
-        Map<String, ?> allEntries = SharedPreferencesHelper.getAllEntries(context);
-        List<Map.Entry<String, String>> diaryEntries = new ArrayList<>();
+    private void loadEntries(Context context, String contactName) {
+        TagRepository tagRepository = TagRepository.getInstance((Application) context.getApplicationContext());
+        Map<String, List<Map.Entry<String, String>>> entriesByDate = new TreeMap<>();
 
+        // Load diary entries
+        Map<String, ?> allEntries = tagRepository.getAllEntries(); // Assuming this method exists to get all entries
+        Log.d("loadEntries","allEntries : "+  allEntries);
         for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-            if (entry.getKey().startsWith("diary_")) {
-                String date = entry.getKey().substring("diary_".length());
-                String diaryContent = SharedPreferencesHelper.loadDiaryContent(context, date);
-                Set<String> diaryTags = SharedPreferencesHelper.loadDiaryTags(context, date);
+            Log.d("loadEntries","entry.getKey() : "+entry.getKey());
+            Log.d("loadEntries", "entry.getValue :" + entry.getValue());
+            if (entry.getKey().endsWith("_diary")) { //다이어리 태그
+                String date = entry.getKey().substring(0, entry.getKey().indexOf('_'));
+                String diaryContent = tagRepository.loadDiaryContent(date);
+                Set<String> diaryTags = tagRepository.loadTags(date + "_diary");
 
                 if (diaryTags.contains(contactName)) {
-                    diaryEntries.add(new AbstractMap.SimpleEntry<>(date, diaryContent));
-                }
-            }
-        }
-
-        diaryEntriesAdapter.setDiaryEntries(diaryEntries);
-    }
-
-
-    private void loadTodoItems(Context context, String contactName) {
-        Map<String, ?> allEntries = SharedPreferencesHelper.getAllEntries(context);
-        List<Map.Entry<String, String>> todoItems = new ArrayList<>();
-
-        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-            if (entry.getKey().startsWith("todo_tags_")) {
-                String date = entry.getKey().substring("todo_tags_".length());
-                Map<String, Set<String>> todoTags = SharedPreferencesHelper.loadToDoTags(context, date);
-
-                for (Map.Entry<String, Set<String>> todoEntry : todoTags.entrySet()) {
-                    if (todoEntry.getValue().contains(contactName)) {
-                        List<ToDoItem> todos = SharedPreferencesHelper.loadToDoList(context, date);
-
-                        for (ToDoItem todo : todos) {
-                            if (todo.getId().equals(todoEntry.getKey())) {
-                                todoItems.add(new AbstractMap.SimpleEntry<>(date, todo.getTask()));
-                            }
-                        }
+                    if (!entriesByDate.containsKey(date)) {
+                        entriesByDate.put(date, new ArrayList<>());
                     }
+                    entriesByDate.get(date).add(new AbstractMap.SimpleEntry<>("Diary", diaryContent));
                 }
+            } else { //todo : 수정 필요
+//                Set<String> todoTags = tagRepository.loadTags(entry.getKey());
+//                for (String todoId : todoTags) {
+//                    if (todoTags.contains(contactName)) {
+//                        List<ToDoItem> todos = tagRepository.loadToDoList(date);
+//
+//                        for (ToDoItem todo : todos) {
+//                            if (todo.getId().equals(todoId)) {
+//                                if (!entriesByDate.containsKey(date)) {
+//                                    entriesByDate.put(date, new ArrayList<>());
+//                                }
+//                                entriesByDate.get(date).add(new AbstractMap.SimpleEntry<>("To-Do", todo.getTask()));
+//                            }
+//                        }
+//                    }
+//                }
+
             }
         }
 
-        todoItemsAdapter.setTodoItems(todoItems);
+        entriesAdapter.setEntries(entriesByDate);
     }
-
-
 }

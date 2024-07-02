@@ -31,39 +31,10 @@
         android:textSize="18sp"
         android:textColor="@android:color/black" />
 
-    <TextView
-        android:id="@+id/diaryEntriesLabel"
-        android:layout_width="wrap_content"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/entriesRecyclerView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/phoneTextView"
-        android:layout_marginTop="16dp"
-        android:text="태그된 일기"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_centerHorizontal="true" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/diaryEntriesRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/diaryEntriesLabel"
-        android:layout_marginTop="8dp" />
-
-    <TextView
-        android:id="@+id/todoItemsLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/diaryEntriesRecyclerView"
-        android:layout_marginTop="16dp"
-        android:text="태그된 할 일"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_centerHorizontal="true" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/todoItemsRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/todoItemsLabel"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="16dp" />
 </RelativeLayout>
