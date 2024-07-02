@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.DailyTag.R;
 import com.example.DailyTag.todos.SharedPreferencesHelper;
+import com.example.DailyTag.todos.ToDoItem;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -100,14 +102,24 @@ public class ContactDetailsActivity extends AppCompatActivity {
         Map<String, ?> allEntries = SharedPreferencesHelper.getAllEntries(context);
         List<String> todoItems = new ArrayList<>();
 
+        // 모든 항목을 반복문을 통해 탐색합니다.
         for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
             if (entry.getKey().startsWith("todo_tags_")) {
+                // 키에서 날짜 부분을 추출합니다.
                 String date = entry.getKey().substring("todo_tags_".length());
+                // 해당 날짜의 할 일 태그들을 불러옵니다.
                 Map<String, Set<String>> todoTags = SharedPreferencesHelper.loadToDoTags(context, date);
 
                 for (Map.Entry<String, Set<String>> todoEntry : todoTags.entrySet()) {
                     if (todoEntry.getValue().contains(contactName)) {
-                        todoItems.add(todoEntry.getKey());
+                        // 해당 날짜의 할 일 리스트를 불러옵니다.
+                        List<ToDoItem> todos = SharedPreferencesHelper.loadToDoList(context, date);
+
+                        for (ToDoItem todo : todos) {
+                            if (todo.getId().equals(todoEntry.getKey())) {
+                                todoItems.add(todo.getTask()); // 할 일 내용을 추가합니다.
+                            }
+                        }
                     }
                 }
             }
@@ -115,4 +127,5 @@ public class ContactDetailsActivity extends AppCompatActivity {
 
         todoItemsAdapter.setTodoItems(todoItems);
     }
+
 }
