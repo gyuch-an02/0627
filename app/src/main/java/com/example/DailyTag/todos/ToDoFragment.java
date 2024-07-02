@@ -358,7 +358,7 @@ public class ToDoFragment extends Fragment {
                     });
                     diaryTagContainer.setVisibility(View.VISIBLE);
                 } else if (toDoItem != null) {
-                    String todoIdentifier = selectedDate + "_" + position + "_todo";
+                    String todoIdentifier = selectedDate + "_" + position + "_todo_tag";
                     tagViewModel.addTag(todoIdentifier, new Tag(contactId, selectedTag, selectedTag));
                 }
             }
@@ -590,7 +590,7 @@ public class ToDoFragment extends Fragment {
 
         ToDoItem toDoItem = toDoList.get(position);
         String identifier = selectedDate + "_" + position + "_todo_tag"; // Unique identifier for each ToDoItem
-        setupAutoCompleteTextView(input, contactNameAdapter, false, toDoItem, toDoList.size());
+        setupAutoCompleteTextView(input, contactNameAdapter, false, toDoItem, position);
         input.setText(toDoItem.getTask());
 
         builder.setPositiveButton("Modify", (dialog, which) -> {
