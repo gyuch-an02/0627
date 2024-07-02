@@ -3,13 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:baselineAligned="false"
     android:orientation="horizontal"
     android:padding="8dp">
 
     <ImageView
-        android:id="@+id/item_profile_image"
+        android:id="@+id/profileImageView"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_margin="10dp"

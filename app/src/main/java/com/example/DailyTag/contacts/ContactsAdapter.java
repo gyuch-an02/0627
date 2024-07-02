@@ -91,7 +91,7 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         } else {
             TextView nameTextView = convertView.findViewById(R.id.nameTextView);
             TextView phoneTextView = convertView.findViewById(R.id.phoneTextView);
-            ImageView profileImageView = convertView.findViewById(R.id.item_profile_image);
+            ImageView profileImageView = convertView.findViewById(R.id.profileImageView);
 
             Contact contact = (Contact) filteredItems.get(position);
             nameTextView.setText(contact.getName());

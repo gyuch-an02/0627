@@ -13,4 +13,8 @@
     <string name="hint_name">이름</string>
     <string name="hint_phone">전화번호</string>
     <string name="text_save">저장</string>
+    <string name="undo_label">Undo</string>
+    <string name="redo_label">Redo</string>
+    <string name="at_label">\@</string>
+    <string name="delete_tag_description">Delete Tag</string>
 </resources>

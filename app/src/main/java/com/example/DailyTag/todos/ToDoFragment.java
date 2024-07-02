@@ -1,5 +1,7 @@
 package com.example.DailyTag.todos;
 
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -10,7 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.LinearLayout;
@@ -39,6 +42,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
+import java.util.Stack;
 
 public class ToDoFragment extends Fragment {
 
@@ -63,6 +68,10 @@ public class ToDoFragment extends Fragment {
     private List<String> diaryTagList;
     private List<String> todoTagList;  // 투두 태그 목록 추가
     private LinearLayout tagContainer;
+    private List<String> tagList;
+    private TextWatcher textWatcher;
+    private Stack<String> undoStack;
+    private Stack<String> redoStack;
 
     @SuppressLint("MissingInflatedId")
     @Nullable
@@ -80,7 +89,12 @@ public class ToDoFragment extends Fragment {
         tvYear = view.findViewById(R.id.tv_year);
         monthYear = view.findViewById(R.id.month_year);
         diaryAutoCompleteTextView = view.findViewById(R.id.diaryAutoCompleteTextView);
+        contactNames = ContactsFragment.getContactNames();
         tagContainer = view.findViewById(R.id.tagContainer);
+        Button undoButton = view.findViewById(R.id.undoButton);
+        Button redoButton = view.findViewById(R.id.redoButton);
+        undoButton.setOnClickListener(v -> undoLastChange());
+        redoButton.setOnClickListener(v -> redoLastChange());
 
         contactNames = ContactsFragment.getContactNames();  // 연락처 이름 가져오기
 
@@ -89,8 +103,11 @@ public class ToDoFragment extends Fragment {
         isTodoEmpty = Boolean.TRUE;
 
         toDoList = new ArrayList<>();
-        diaryTagList = new ArrayList<>(SharedPreferencesHelper.loadDiaryTags(getContext()));  // 다이어리 태그 불러오기
-        todoTagList = new ArrayList<>(SharedPreferencesHelper.loadToDoTags(getContext()));  // 투두 태그 불러오기
+        diaryTagList = new ArrayList<>(SharedPreferencesHelper.loadDiaryTags(requireContext()));  // 다이어리 태그 불러오기
+        todoTagList = new ArrayList<>(SharedPreferencesHelper.loadToDoTags(requireContext()));  // 투두 태그 불러오기
+        tagList = new ArrayList<>();
+        undoStack = new Stack<>();
+        redoStack = new Stack<>();
 
         selectedDate = getCurrentDate();
         loadToDoList(selectedDate);
@@ -206,7 +223,7 @@ public class ToDoFragment extends Fragment {
 
     private void setUpMonthYearPicker() {
         View.OnClickListener listener = v -> {
-            MonthPickerDialog.Builder builder = new MonthPickerDialog.Builder(getContext(), (selectedMonth, selectedYear) -> {
+            MonthPickerDialog.Builder builder = new MonthPickerDialog.Builder(requireContext(), (selectedMonth, selectedYear) -> {
                 calendar.set(Calendar.MONTH, selectedMonth);
                 calendar.set(Calendar.YEAR, selectedYear);
                 updateCalendar();
@@ -267,18 +284,22 @@ public class ToDoFragment extends Fragment {
     private void setupAutoCompleteTextView(AutoCompleteTextView autoCompleteTextView, ArrayAdapter<String> adapter, boolean isDiary) {
         autoCompleteTextView.setAdapter(adapter);
 
-        autoCompleteTextView.addTextChangedListener(new TextWatcher() {
+        textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // Do nothing
+                // Save the current state before the text is changed
+                undoStack.push(s.toString());
+                // Clear the redo stack when a new change is made
+                redoStack.clear();
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String input = s.toString();
                 if (input.contains("@")) {
-                    int atIndex = input.indexOf("@");
-                    String query = input.substring(atIndex + 1);
+                    int fromIndex = input.lastIndexOf("@");
+                    int toIndex = input.indexOf(' ', fromIndex);
+                    String query = input.substring(fromIndex + 1, toIndex < 0 ? autoCompleteTextView.getText().length() : toIndex);
                     if (!query.isEmpty()) {
                         autoCompleteTextView.post(() -> adapter.getFilter().filter(query, resultCount -> {
                             if (resultCount > 0) {
@@ -294,26 +315,48 @@ public class ToDoFragment extends Fragment {
                         });
                     }
                 } else {
-                    autoCompleteTextView.post(() -> autoCompleteTextView.dismissDropDown());
+                    autoCompleteTextView.post(autoCompleteTextView::dismissDropDown);
                 }
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                // Do nothing
+                saveToDoList(selectedDate);
             }
-        });
+        };
+
+        autoCompleteTextView.addTextChangedListener(textWatcher);
 
         autoCompleteTextView.setOnItemClickListener((parent, view, position, id) -> {
             String selectedTag = adapter.getItem(position);
             if (selectedTag != null) {
-                String currentText = autoCompleteTextView.getText().toString();
-                int atIndex = currentText.lastIndexOf("@");
-                String newText = currentText.substring(0, atIndex + 1) + selectedTag + " ";
-                autoCompleteTextView.setText(newText);
-                autoCompleteTextView.setSelection(newText.length());
-                if (isDiary) {
-                    addTagToLayout(tagContainer, selectedTag);
+                int cursorPosition = autoCompleteTextView.getSelectionStart();
+                Editable editable = autoCompleteTextView.getText();
+                int fromIndex = editable.toString().lastIndexOf("@", cursorPosition - 1);
+
+                if (fromIndex != -1) {
+                    int toIndex = editable.toString().indexOf(' ', fromIndex);
+                    if (toIndex == -1) {
+                        toIndex = autoCompleteTextView.getText().length();
+                    }
+                    autoCompleteTextView.removeTextChangedListener(textWatcher);
+
+                    // Ensure the selection is correct before modifying the text
+                    String textBefore = editable.toString().substring(0, fromIndex);
+                    String textAfter = editable.toString().substring(toIndex);
+
+                    // Update the text with the selected tag
+                    autoCompleteTextView.setText(textBefore + selectedTag + textAfter);
+
+                    // Move the cursor to the end of the newly inserted tag
+                    autoCompleteTextView.setSelection((textBefore + selectedTag).length());
+
+                    autoCompleteTextView.addTextChangedListener(textWatcher);
+
+                    if (isDiary) {
+                        addTagToLayout(tagContainer, diaryTagList, selectedTag);
+                    }
+                    saveToDoList(selectedDate);
                 }
             }
         });
@@ -324,8 +367,9 @@ public class ToDoFragment extends Fragment {
             } else {
                 String input = autoCompleteTextView.getText().toString();
                 if (input.contains("@")) {
-                    int atIndex = input.indexOf("@");
-                    String query = input.substring(atIndex + 1);
+                    int fromIndex = input.lastIndexOf("@");
+                    int toIndex = input.indexOf(' ', fromIndex);
+                    String query = input.substring(fromIndex + 1, toIndex < 0 ? autoCompleteTextView.getSelectionStart() : toIndex);
                     if (!query.isEmpty()) {
                         adapter.getFilter().filter(query, count -> {
                             if (count > 0) {
@@ -342,8 +386,9 @@ public class ToDoFragment extends Fragment {
         autoCompleteTextView.setOnClickListener(v -> {
             String input = autoCompleteTextView.getText().toString();
             if (input.contains("@")) {
-                int atIndex = input.indexOf("@");
-                String query = input.substring(atIndex + 1);
+                int fromIndex = input.lastIndexOf("@");
+                int toIndex = input.indexOf(' ', fromIndex);
+                String query = input.substring(fromIndex + 1, toIndex < 0 ? autoCompleteTextView.getSelectionStart() : toIndex);
                 if (!query.isEmpty()) {
                     adapter.getFilter().filter(query, count -> {
                         if (count > 0) {
@@ -357,49 +402,130 @@ public class ToDoFragment extends Fragment {
         });
     }
 
-    private void addTagToLayout(LinearLayout tagContainer, String tag) {
-        tagContainer.setVisibility(View.VISIBLE);
+    private void undoLastChange() {
+        if (!undoStack.isEmpty()) {
+            // Get the last state from the stack
+            String lastState = undoStack.pop();
+            // Save the current state to the redo stack
+            redoStack.push(diaryAutoCompleteTextView.getText().toString());
 
-        TextView tagView = new TextView(requireContext());
-        tagView.setText(tag);
-        tagView.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.tag_background));
-        tagView.setPadding(8, 4, 8, 4);
-        tagView.setTextColor(ContextCompat.getColor(requireContext(), R.color.white));
-        tagView.setOnClickListener(v -> {
+            // Temporarily remove the text watcher to avoid triggering it
+            diaryAutoCompleteTextView.removeTextChangedListener(textWatcher);
+
+            // Revert to the last state
+            diaryAutoCompleteTextView.setText(lastState);
+
+            // Move the cursor to the end of the text
+            diaryAutoCompleteTextView.setSelection(lastState.length());
+
+            // Re-attach the text watcher
+            diaryAutoCompleteTextView.addTextChangedListener(textWatcher);
+
+            // Save the reverted state
+            saveToDoList(selectedDate);
+        } else {
+            Toast.makeText(requireContext(), "No more changes to undo", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void redoLastChange() {
+        if (!redoStack.isEmpty()) {
+            // Get the last undone state from the stack
+            String lastState = redoStack.pop();
+            // Save the current state to the undo stack
+            undoStack.push(diaryAutoCompleteTextView.getText().toString());
+
+            // Temporarily remove the text watcher to avoid triggering it
+            diaryAutoCompleteTextView.removeTextChangedListener(textWatcher);
+
+            // Restore the last undone state
+            diaryAutoCompleteTextView.setText(lastState);
+
+            // Move the cursor to the end of the text
+            diaryAutoCompleteTextView.setSelection(lastState.length());
+
+            // Re-attach the text watcher
+            diaryAutoCompleteTextView.addTextChangedListener(textWatcher);
+
+            // Save the restored state
+            saveToDoList(selectedDate);
+        } else {
+            Toast.makeText(requireContext(), "No more changes to redo", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void addTagToLayout(LinearLayout tagContainer, List<String> tagList, String tag) {
+        // Check if the tag is already in the layout
+        for (int i = 0; i < tagContainer.getChildCount(); i++) {
+            View existingTagView = tagContainer.getChildAt(i);
+            TextView existingTagTextView = existingTagView.findViewById(R.id.tagTextView);
+            if (existingTagTextView.getText().toString().equals(tag)) {
+                // Tag already exists in the layout, do not add it again
+                Toast.makeText(requireContext(), "Tag already exists", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        // Inflate the tag layout
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
+        View tagView = inflater.inflate(R.layout.item_tag, tagContainer, false);
+
+        // Set the tag text
+        TextView tagTextView = tagView.findViewById(R.id.tagTextView);
+        tagTextView.setText(tag);
+
+        // Set a random background color
+        int backgroundColor = getRandomColor();
+        GradientDrawable background = (GradientDrawable) tagView.getBackground();
+        background.setColor(backgroundColor);
+
+        // Set the delete button behavior
+        ImageButton deleteButton = tagView.findViewById(R.id.deleteButton);
+        deleteButton.setOnClickListener(v -> {
             tagContainer.removeView(tagView);
-            diaryTagList.remove(tag);
+            tagList.remove(tag);
             saveTagList(selectedDate);
             if (tagContainer.getChildCount() == 0) {
                 tagContainer.setVisibility(View.GONE);
             }
         });
 
+        // Add the tag view to the container
         tagContainer.addView(tagView);
-        if (!diaryTagList.contains(tag)) {
-            diaryTagList.add(tag);
+        if (!tagList.contains(tag)) {
+            tagList.add(tag);
             saveTagList(selectedDate);
         }
+
+        // Show the tag container if hidden
+        tagContainer.setVisibility(View.VISIBLE);
+    }
+
+    private int getRandomColor() {
+        Random rnd = new Random();
+        return Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
     }
 
     private void loadTagList(String date) {
-        diaryTagList = new ArrayList<>(SharedPreferencesHelper.loadDiaryTags(getContext()));
-        todoTagList = new ArrayList<>(SharedPreferencesHelper.loadToDoTags(getContext()));
-        updateTagContainer();
+        diaryTagList = new ArrayList<>(SharedPreferencesHelper.loadDiaryTags(requireContext()));
+        todoTagList = new ArrayList<>(SharedPreferencesHelper.loadToDoTags(requireContext()));
+        updateTagContainer(tagContainer, diaryTagList);
+        // TODO: update  todoTagContainer
     }
 
     private void saveTagList(String date) {
-        SharedPreferencesHelper.saveDiaryTags(getContext(), new HashSet<>(diaryTagList));
-        SharedPreferencesHelper.saveToDoTags(getContext(), new HashSet<>(todoTagList));
+        SharedPreferencesHelper.saveDiaryTags(requireContext(), new HashSet<>(diaryTagList));
+        SharedPreferencesHelper.saveToDoTags(requireContext(), new HashSet<>(todoTagList));
     }
 
-    private void updateTagContainer() {
+    private void updateTagContainer(LinearLayout tagContainer, List<String> tagList) {
         tagContainer.removeAllViews();
-        if (diaryTagList.isEmpty()) {
+        if (tagList.isEmpty()) {
             tagContainer.setVisibility(View.GONE);
         } else {
             tagContainer.setVisibility(View.VISIBLE);
-            for (String tag : diaryTagList) {
-                addTagToLayout(tagContainer, tag);
+            for (String tag : tagList) {
+                addTagToLayout(tagContainer, tagList, tag);
             }
         }
     }
@@ -417,12 +543,13 @@ public class ToDoFragment extends Fragment {
         textDiary.setTextColor(ContextCompat.getColor(requireContext(), R.color.inactive_text));
 
         diaryAutoCompleteTextView.setVisibility(View.GONE);
-        tagContainer.setVisibility(View.GONE);  // 태그 컨테이너 숨기기
+
         if (isTodoEmpty) {
             emptyTextView.setVisibility(View.VISIBLE);
         }
         todoContainer.setVisibility(View.VISIBLE);
         addTodoButton.setVisibility(View.VISIBLE);
+        tagContainer.setVisibility(View.GONE);  // 태그 컨테이너 숨기기
 
         textDiary.setOnClickListener(v -> activateDiary());
         textTodo.setOnClickListener(null); // No action for the activated text
@@ -449,12 +576,16 @@ public class ToDoFragment extends Fragment {
             // Load diary content
             String diaryContent = SharedPreferencesHelper.loadDiaryContent(requireContext(), date);
             diaryAutoCompleteTextView.setText(diaryContent);
+            diaryTagList = new ArrayList<>(SharedPreferencesHelper.loadDiaryTags(requireContext()));
+            updateTagContainer(tagContainer, diaryTagList);
         } else {
             // Load to-do list
             toDoList.clear();
             toDoList.addAll(SharedPreferencesHelper.loadToDoList(requireContext(), date));
             sortToDoList();  // Ensure the list is sorted before updating the UI
             updateToDoContainer();
+            todoTagList = new ArrayList<>(SharedPreferencesHelper.loadToDoTags(requireContext())); // Load all To-Do tags for the entire app
+            updateTagContainer(tagContainer, todoTagList);
         }
     }
 
@@ -463,9 +594,11 @@ public class ToDoFragment extends Fragment {
             // Save diary content
             String diaryContent = diaryAutoCompleteTextView.getText().toString();
             SharedPreferencesHelper.saveDiaryContent(requireContext(), date, diaryContent);
+            SharedPreferencesHelper.saveDiaryTags(requireContext(), new HashSet<>(diaryTagList));
         } else {
             // Save to-do list
             SharedPreferencesHelper.saveToDoList(requireContext(), date, toDoList);
+            SharedPreferencesHelper.saveToDoTags(requireContext(), new HashSet<>(todoTagList)); // Save all To-Do tags for the entire app
         }
     }
 
@@ -491,11 +624,11 @@ public class ToDoFragment extends Fragment {
             String task = input.getText().toString();
             if (!task.isEmpty()) {
                 ToDoItem newItem = new ToDoItem(task, false);
+                updateTagList(task, newItem.getTags(), todoTagList); // Update tags for the new item
                 toDoList.add(newItem);
                 sortToDoList();  // Sort after adding a new item
                 saveToDoList(selectedDate);
                 updateToDoContainer();
-                updateTagList(task, todoTagList); // Update tag list here
             } else {
                 Toast.makeText(requireContext(), "Task cannot be empty", Toast.LENGTH_SHORT).show();
             }
@@ -523,11 +656,12 @@ public class ToDoFragment extends Fragment {
         builder.setPositiveButton("Modify", (dialog, which) -> {
             String task = input.getText().toString();
             if (!task.isEmpty()) {
-                toDoList.get(position).setTask(task);
+                ToDoItem toDoItem = toDoList.get(position);
+                toDoItem.setTask(task);
+                updateTagList(task, toDoItem.getTags(), todoTagList); // Update tags for the modified item
                 sortToDoList();  // Sort after modifying an item
                 saveToDoList(selectedDate);
                 updateToDoContainer();
-                updateTagList(input.getText().toString(), todoTagList);
             } else {
                 Toast.makeText(requireContext(), "Task cannot be empty", Toast.LENGTH_SHORT).show();
             }
@@ -545,14 +679,17 @@ public class ToDoFragment extends Fragment {
         builder.show();
     }
 
-
-    private void updateTagList(String text, List<String> tagList) {
+    private void updateTagList(String text, List<String> itemTags, List<String> tagList) {
+        itemTags.clear();
         for (String word : text.split(" ")) {
-            if (word.startsWith("@") && !tagList.contains(word)) {
-                tagList.add(word);
+            if (word.startsWith("@")) {
+                itemTags.add(word);
+                if (!tagList.contains(word)) {
+                    tagList.add(word);
+                }
             }
         }
-        SharedPreferencesHelper.saveToDoTags(getContext(), new HashSet<>(tagList));
+        saveToDoList(selectedDate); // Save the updated tags along with the to-do list
     }
 
     private void updateToDoContainer() {
@@ -569,10 +706,21 @@ public class ToDoFragment extends Fragment {
                 View itemView = LayoutInflater.from(requireContext()).inflate(R.layout.item_todo, todoContainer, false);
                 TextView toDoTextView = itemView.findViewById(R.id.todoTextView);
                 CheckBox toDoCheckBox = itemView.findViewById(R.id.todoCheckBox);
+                LinearLayout tagContainer = itemView.findViewById(R.id.tagContainer);
 
                 ToDoItem toDoItem = toDoList.get(i);
                 toDoTextView.setText(toDoItem.getTask());
                 toDoCheckBox.setChecked(toDoItem.isDone());
+
+                tagContainer.removeAllViews();
+                if (!toDoItem.getTags().isEmpty()) {
+                    tagContainer.setVisibility(View.VISIBLE);
+                    for (String tag : toDoItem.getTags()) {
+                        addTagToLayout(tagContainer, todoTagList, tag);
+                    }
+                } else {
+                    tagContainer.setVisibility(View.GONE);
+                }
 
                 final int position = i;
                 toDoCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -589,10 +737,9 @@ public class ToDoFragment extends Fragment {
         }
     }
 
+
+
     private void sortToDoList() {
         toDoList.sort((o1, o2) -> Boolean.compare(o1.isDone(), o2.isDone()));
     }
 }
-
-
-

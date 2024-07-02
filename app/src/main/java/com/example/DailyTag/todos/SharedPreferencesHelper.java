@@ -9,7 +9,6 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class SharedPreferencesHelper {
@@ -53,7 +52,7 @@ public class SharedPreferencesHelper {
         return prefs.getString(DIARY_KEY + date, "");
     }
 
-    // 다이어리 태그 저장
+    // Save the diary tags
     public static void saveDiaryTags(Context context, Set<String> tags) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -61,13 +60,13 @@ public class SharedPreferencesHelper {
         editor.apply();
     }
 
-    // 다이어리 태그 불러오기
+    // Load the diary tags
     public static Set<String> loadDiaryTags(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return prefs.getStringSet(KEY_DIARY_TAGS, new HashSet<>());
     }
 
-    // 투두 태그 저장
+    // Save the to-do tags
     public static void saveToDoTags(Context context, Set<String> tags) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -75,7 +74,7 @@ public class SharedPreferencesHelper {
         editor.apply();
     }
 
-    // 투두 태그 불러오기
+    // Load the to-do tags
     public static Set<String> loadToDoTags(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return prefs.getStringSet(KEY_TODO_TAGS, new HashSet<>());

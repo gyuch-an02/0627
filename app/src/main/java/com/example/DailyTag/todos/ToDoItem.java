@@ -1,5 +1,6 @@
 package com.example.DailyTag.todos;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ToDoItem {
@@ -10,26 +11,15 @@ public class ToDoItem {
     public ToDoItem(String task, boolean done) {
         this.task = task;
         this.done = done;
-        this.tags = tags;
+        this.tags = new ArrayList<>();
     }
-    public List<String> getTags() { return tags; }
 
+    public List<String> getTags() { return tags; }
     public void setTags(List<String> tags) { this.tags = tags; }
 
-    public String getTask() {
-        return task;
-    }
+    public String getTask() { return task; }
+    public void setTask(String task) { this.task = task; }
 
-    public void setTask(String task) {
-        this.task = task;
-    }
-
-    public boolean isDone() {
-        return done;
-    }
-
-    public void setDone(boolean done) {
-        this.done = done;
-    }
-
+    public boolean isDone() { return done; }
+    public void setDone(boolean done) { this.done = done; }
 }
