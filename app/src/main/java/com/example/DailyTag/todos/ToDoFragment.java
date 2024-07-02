@@ -555,7 +555,7 @@ public class ToDoFragment extends Fragment {
         });
         activeText.setOnClickListener(null);
     }
-    
+
     private void loadToDoDiary(String date) {
         toDoList = SharedPreferencesHelper.loadToDoList(requireContext(), date);
         checkAndInitializeToDoList();

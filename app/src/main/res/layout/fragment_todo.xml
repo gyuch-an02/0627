@@ -109,8 +109,9 @@
                 style="?android:attr/buttonBarStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="right"
-                android:orientation="horizontal" >
+                android:gravity="end"
+                android:orientation="horizontal"
+                android:visibility="visible">
 
                 <Button
                     android:id="@+id/undoButton"
@@ -119,7 +120,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:text="@string/undo_label"
-                    android:visibility="gone" />
+                    android:visibility="visible" />
 
                 <Button
                     android:id="@+id/redoButton"
@@ -128,7 +129,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="@string/redo_label"
-                    android:visibility="gone"/>
+                    android:visibility="visible"/>
 
             </LinearLayout>
 
