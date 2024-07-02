@@ -3,6 +3,7 @@ package com.example.DailyTag.contacts;
 import android.content.ContentUris;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -11,6 +12,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -110,9 +112,16 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
                 return true;
             });
 
-//            convertView.setOnClickListener(v -> {
-//                contactActionListener.onContactAction(contact);
-//            });
+            convertView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, ContactDetailsActivity.class);
+                intent.putExtra("CONTACT_ID", contact.getId());
+                intent.putExtra("CONTACT_NAME", contact.getName());
+                Log.d("setOnClickListener","getPhoneNumber "+contact.getPhoneNumber());
+                intent.putExtra("CONTACT_PHONE_NUMBER", contact.getPhoneNumber());
+                intent.putExtra("CONTACT_PROFILE_IMAGE", contact.getProfileImage());
+                context.startActivity(intent);
+            });
+
         }
 
         return convertView;
