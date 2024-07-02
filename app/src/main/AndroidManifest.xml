@@ -28,8 +28,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DailyTag"
         tools:targetApi="31">
+
         <activity
-            android:name=".MainActivity"
+            android:name=".SplashActivity"
             android:windowSoftInputMode="adjustPan"
             android:exported="true">
             <intent-filter>
@@ -38,8 +39,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+        </activity>
 
-        <activity android:name=".contacts.ContactActivity" />
+
     </application>
 
 </manifest>
