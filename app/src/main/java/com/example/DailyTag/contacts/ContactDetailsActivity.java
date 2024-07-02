@@ -92,7 +92,7 @@ public class ContactDetailsActivity extends AppCompatActivity {
                         break;
                     }
                 }
-            } else if (entry.getKey().contains("_todo")) {
+            } else if (entry.getKey().contains("_todo_tag")) {
                 Log.d("loadEntries", entry.getKey());
                 String[] parts = entry.getKey().split("_");
                 String date = parts[0];
