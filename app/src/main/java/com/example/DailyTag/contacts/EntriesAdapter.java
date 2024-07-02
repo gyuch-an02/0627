@@ -8,23 +8,24 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.DailyTag.R;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class EntriesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Map<String, List<EntryItem>> entriesByDate;
+    private List<Map.Entry<String, EntryItem>> flattenedEntries;
 
     public void setEntries(Map<String, List<EntryItem>> entriesByDate) {
         this.entriesByDate = entriesByDate;
+        this.flattenedEntries = flattenEntries(entriesByDate);
         notifyDataSetChanged();
     }
 
     @Override
     public int getItemViewType(int position) {
-        // Implement logic to return correct view type based on EntryItem type
-        // Assuming entriesByDate is flattened, so implement accordingly
-        return 0;
+        return flattenedEntries.get(position).getValue().getType();
     }
 
     @Override
@@ -39,64 +40,69 @@ public class EntriesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             ImageView imageView = new ImageView(parent.getContext());
             return new ImageViewHolder(imageView);
         }
-        // Other view types
         return null;
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        EntryItem item = getItem(position);
+        Map.Entry<String, EntryItem> itemEntry = flattenedEntries.get(position);
+        String date = itemEntry.getKey();
+        EntryItem item = itemEntry.getValue();
+
         if (holder instanceof DiaryViewHolder) {
-            ((DiaryViewHolder) holder).bind(item.getText());
+            ((DiaryViewHolder) holder).bind(item.getText(), date);
         } else if (holder instanceof ToDoViewHolder) {
-            ((ToDoViewHolder) holder).bind(item.getText());
+            ((ToDoViewHolder) holder).bind(item.getText(), date);
         } else if (holder instanceof ImageViewHolder) {
             ((ImageViewHolder) holder).bind(item.getImageView());
         }
-        // Other view bindings
     }
 
     @Override
     public int getItemCount() {
-        return entriesByDate == null ? 0 : flattenEntries(entriesByDate).size();
+        return flattenedEntries == null ? 0 : flattenedEntries.size();
     }
 
-    private EntryItem getItem(int position) {
-        List<EntryItem> flattenedEntries = flattenEntries(entriesByDate);
-        return flattenedEntries.get(position);
-    }
-
-    private List<EntryItem> flattenEntries(Map<String, List<EntryItem>> map) {
-        List<EntryItem> flattenedList = new ArrayList<>();
-        for (List<EntryItem> list : map.values()) {
-            flattenedList.addAll(list);
+    private List<Map.Entry<String, EntryItem>> flattenEntries(Map<String, List<EntryItem>> map) {
+        List<Map.Entry<String, EntryItem>> flattenedList = new ArrayList<>();
+        for (Map.Entry<String, List<EntryItem>> entry : map.entrySet()) {
+            String date = entry.getKey();
+            for (EntryItem item : entry.getValue()) {
+                flattenedList.add(new AbstractMap.SimpleEntry<>(date, item));
+            }
         }
         return flattenedList;
     }
 
     static class DiaryViewHolder extends RecyclerView.ViewHolder {
         private TextView diaryContentTextView;
+        private TextView diaryDateTextView;
 
         public DiaryViewHolder(View itemView) {
             super(itemView);
-            diaryContentTextView = itemView.findViewById(R.id.diaryContentTextView);
+            diaryContentTextView = itemView.findViewById(R.id.diaryEntryContentTextView);
+            diaryDateTextView = itemView.findViewById(R.id.diaryEntryDateTextView);
         }
 
-        public void bind(String text) {
+        public void bind(String text, String date) {
             diaryContentTextView.setText(text);
+            diaryDateTextView.setText(date);
         }
     }
 
     static class ToDoViewHolder extends RecyclerView.ViewHolder {
         private TextView toDoTextView;
+        private TextView toDoDateTextView;
 
         public ToDoViewHolder(View itemView) {
             super(itemView);
             toDoTextView = itemView.findViewById(R.id.todoTextView);
+            toDoDateTextView = itemView.findViewById(R.id.todoDateTextView);
         }
 
-        public void bind(String text) {
+        public void bind(String text, String date) {
             toDoTextView.setText(text);
+            toDoDateTextView.setText(date);
         }
     }
 

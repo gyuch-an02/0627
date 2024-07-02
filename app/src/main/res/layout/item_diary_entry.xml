@@ -2,22 +2,22 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="8dp"
+    android:orientation="vertical">
 
     <TextView
-        android:id="@+id/diaryDateTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textColor="@android:color/black"
-        android:text="Date" />
-
-    <TextView
-        android:id="@+id/diaryContentTextView"
-        android:layout_width="wrap_content"
+        android:id="@+id/diaryEntryDateTextView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="14sp"
-        android:textColor="@android:color/darker_gray"
-        android:text="Diary Content" />
+        android:textColor="@android:color/darker_gray" />
+
+    <TextView
+        android:id="@+id/diaryEntryContentTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="@android:color/black" />
+
+
 </LinearLayout>

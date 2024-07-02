@@ -445,7 +445,7 @@ public class ToDoFragment extends Fragment {
             emptyTextView.setVisibility(View.GONE);
             for (int i = 0; i < toDoList.size(); i++) {
                 ToDoItem toDoItem = toDoList.get(i);
-                String identifier = selectedDate + "_" + i + "_todo_tag"; // Unique identifier for each ToDoItem
+                String identifier = selectedDate + "_" + i + " "; // Unique identifier for each ToDoItem
                 View itemView = LayoutInflater.from(requireContext()).inflate(R.layout.item_todo, todoContainer, false);
                 TextView toDoTextView = itemView.findViewById(R.id.todoTextView);
                 CheckBox toDoCheckBox = itemView.findViewById(R.id.todoCheckBox);
