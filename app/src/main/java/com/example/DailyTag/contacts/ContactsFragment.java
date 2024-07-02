@@ -111,7 +111,7 @@ public class ContactsFragment extends Fragment {
         contactsAndHeaders.clear();
         Cursor cursor = requireActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
 
-        Map<String, List<ContactsAdapter.Contact>> groupedContacts = new TreeMap<>();
+        Map<String, List<Contact>> groupedContacts = new TreeMap<>();
 
         if (cursor != null) {
             while (cursor.moveToNext()) {
@@ -124,12 +124,12 @@ public class ContactsFragment extends Fragment {
                 if (!groupedContacts.containsKey(initial)) {
                     groupedContacts.put(initial, new ArrayList<>());
                 }
-                Objects.requireNonNull(groupedContacts.get(initial)).add(new ContactsAdapter.Contact(id, name, phoneNumber, profileImage));
+                Objects.requireNonNull(groupedContacts.get(initial)).add(new Contact(id, name, phoneNumber, profileImage));
             }
             cursor.close();
         }
 
-        for (Map.Entry<String, List<ContactsAdapter.Contact>> entry : groupedContacts.entrySet()) {
+        for (Map.Entry<String, List<Contact>> entry : groupedContacts.entrySet()) {
             // Add header and contacts to the list
             contactsAndHeaders.add(entry.getKey()); // Add header
             contactsAndHeaders.addAll(entry.getValue()); // Add contacts
@@ -163,15 +163,15 @@ public class ContactsFragment extends Fragment {
     public static List<String> getContactNames() {
         List<String> contactNames = new ArrayList<>();
         for (Object item : contactsAndHeaders) {
-            if (item instanceof ContactsAdapter.Contact) {
-                contactNames.add(((ContactsAdapter.Contact) item).getName());
+            if (item instanceof Contact) {
+                contactNames.add(((Contact) item).getName());
             }
         }
         return contactNames;
     }
 
-    public static List<ContactsAdapter.Contact> getContacts(Context context) {
-        List<ContactsAdapter.Contact> contacts = new ArrayList<>();
+    public static List<Contact> getContacts(Context context) {
+        List<Contact> contacts = new ArrayList<>();
         ContentResolver contentResolver = context.getContentResolver();
         Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
 
@@ -193,7 +193,7 @@ public class ContactsFragment extends Fragment {
                             String phoneNumber = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                             Bitmap profileImage = getContactPhoto(context, id);
 
-                            contacts.add(new ContactsAdapter.Contact(Long.parseLong(id), name, phoneNumber, profileImage));
+                            contacts.add(new Contact(Long.parseLong(id), name, phoneNumber, profileImage));
                         }
                         phoneCursor.close();
                     }
