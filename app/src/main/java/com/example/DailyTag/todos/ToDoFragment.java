@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextPaint;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,13 +26,12 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.DailyTag.R;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.example.DailyTag.contacts.ContactsFragment;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.michalsvec.singlerowcalendar.calendar.CalendarChangesObserver;
 import com.michalsvec.singlerowcalendar.calendar.CalendarViewManager;
 import com.michalsvec.singlerowcalendar.calendar.SingleRowCalendar;
 import com.michalsvec.singlerowcalendar.calendar.SingleRowCalendarAdapter;
-import com.michalsvec.singlerowcalendar.selection.CalendarSelectionManager;
 
 import com.whiteelephant.monthpicker.MonthPickerDialog;
 
@@ -43,12 +44,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ToDoFragment extends Fragment {
-
+    private static final int TAG_WIDTH_DP = 45;
     private SingleRowCalendar singleRowCalendar;
     private LinearLayout todoContainer;
     private FloatingActionButton addTodoButton;
@@ -56,29 +58,27 @@ public class ToDoFragment extends Fragment {
     private TextView textTodo;
     private TextView textDiary;
     private AutoCompleteTextView diaryAutoCompleteTextView;
-    private List<String> contactNames;
     private TextView tvMonth;
     private TextView tvYear;
     private LinearLayout monthYear;
     private ArrayList<ToDoItem> toDoList;
     private boolean isDiaryActive;
     private String selectedDate;
-    private Boolean isTodoEmpty;
     private Calendar calendar;
     private int currentMonth;
     private ArrayAdapter<String> contactNameAdapter;
-    private List<String> todoTagList;
-    private List<String> diaryTagList;
-    private LinearLayout todoTagContainer;
+    private Set<String> diaryTagList;
     private LinearLayout diaryTagContainer;
+    private LinearLayout todoTagContainer;
+    private TextWatcher textWatcher;
     private Stack<String> undoStack;
     private Stack<String> redoStack;
-    private TextWatcher textWatcher;
 
     @SuppressLint("MissingInflatedId")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.d("onCreateView", "onCreateView");
         View view = inflater.inflate(R.layout.fragment_todo, container, false);
         initializeViews(view);
         initializeVariables();
@@ -106,7 +106,6 @@ public class ToDoFragment extends Fragment {
         diaryTagContainer = view.findViewById(R.id.tagContainer);
         Button undoButton = view.findViewById(R.id.undoButton);
         Button redoButton = view.findViewById(R.id.redoButton);
-
         undoButton.setOnClickListener(v -> undoLastChange());
         redoButton.setOnClickListener(v -> redoLastChange());
 
@@ -114,12 +113,10 @@ public class ToDoFragment extends Fragment {
     }
 
     private void initializeVariables() {
-        contactNames = ContactsFragment.getContactNames();
+        List<String> contactNames = ContactsFragment.getContactNames();
         contactNameAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, contactNames);
-        isTodoEmpty = Boolean.TRUE;
         toDoList = new ArrayList<>();
-        diaryTagList = new ArrayList<>();
-        todoTagList = new ArrayList<>();
+        diaryTagList = new HashSet<>();
         undoStack = new Stack<>();
         redoStack = new Stack<>();
         selectedDate = getCurrentDate();
@@ -138,7 +135,7 @@ public class ToDoFragment extends Fragment {
             }
 
             @Override
-            public void bindDataToCalendarView(SingleRowCalendarAdapter.CalendarViewHolder holder, @NonNull Date date, int position, boolean isSelected) {
+            public void bindDataToCalendarView(@NonNull SingleRowCalendarAdapter.CalendarViewHolder holder, @NonNull Date date, int position, boolean isSelected) {
                 TextView tvDay = holder.itemView.findViewById(R.id.tv_day);
                 TextView tvWeek = holder.itemView.findViewById(R.id.tv_week);
                 tvDay.setText(getDayNumber(date));
@@ -157,9 +154,9 @@ public class ToDoFragment extends Fragment {
         singleRowCalendar.setCalendarChangesObserver(new CalendarChangesObserver() {
             @Override
             public void whenSelectionChanged(boolean isSelected, int position, @NonNull Date date) {
+                Log.d("whenSelectionChanged", "Selection changed to " + position + " for " + date);
                 if (isSelected) {
                     saveToDoDiary(selectedDate);
-                    saveTagList(selectedDate);
                     selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
                     loadToDoDiary(selectedDate);
                     loadTagList(selectedDate);
@@ -213,20 +210,18 @@ public class ToDoFragment extends Fragment {
     }
 
     private void setUpMonthYearPicker() {
-        monthYear.setOnClickListener(v -> {
-            new MonthPickerDialog.Builder(requireContext(), (selectedMonth, selectedYear) -> {
-                calendar.set(Calendar.MONTH, selectedMonth);
-                calendar.set(Calendar.YEAR, selectedYear);
-                updateCalendar();
-            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH))
-                    .setActivatedMonth(calendar.get(Calendar.MONTH))
-                    .setMinYear(1990)
-                    .setActivatedYear(calendar.get(Calendar.YEAR))
-                    .setMaxYear(2030)
-                    .setTitle("Select Month and Year")
-                    .build()
-                    .show();
-        });
+        monthYear.setOnClickListener(v -> new MonthPickerDialog.Builder(requireContext(), (selectedMonth, selectedYear) -> {
+            calendar.set(Calendar.MONTH, selectedMonth);
+            calendar.set(Calendar.YEAR, selectedYear);
+            updateCalendar();
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH))
+                .setActivatedMonth(calendar.get(Calendar.MONTH))
+                .setMinYear(1990)
+                .setActivatedYear(calendar.get(Calendar.YEAR))
+                .setMaxYear(2030)
+                .setTitle("Select Month and Year")
+                .build()
+                .show());
     }
 
     private void updateMonthYearDisplay() {
@@ -276,7 +271,7 @@ public class ToDoFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                saveToDoDiary(selectedDate);
+                //
             }
         };
 
@@ -289,7 +284,7 @@ public class ToDoFragment extends Fragment {
     private void handleAutoCompleteTextChanged(AutoCompleteTextView autoCompleteTextView, ArrayAdapter<String> adapter, String input) {
         if (input.contains("@")) {
             int fromIndex = input.lastIndexOf("@");
-            int toIndex = input.indexOf(' ', fromIndex);
+            int toIndex = findNextWhitespaceIndex(input, fromIndex);
             String query = input.substring(fromIndex + 1, toIndex < 0 ? autoCompleteTextView.getText().length() : toIndex);
             if (!query.isEmpty()) {
                 autoCompleteTextView.post(() -> adapter.getFilter().filter(query, count -> {
@@ -310,6 +305,7 @@ public class ToDoFragment extends Fragment {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void handleAutoCompleteItemClick(AutoCompleteTextView autoCompleteTextView, String selectedTag, boolean isDiary, ToDoItem toDoItem) {
         if (selectedTag != null) {
             int cursorPosition = autoCompleteTextView.getSelectionStart();
@@ -317,7 +313,7 @@ public class ToDoFragment extends Fragment {
             int fromIndex = editable.toString().lastIndexOf("@", cursorPosition - 1);
 
             if (fromIndex != -1) {
-                int toIndex = editable.toString().indexOf(' ', fromIndex);
+                int toIndex = findNextWhitespaceIndex(editable.toString(), fromIndex);
                 if (toIndex == -1) {
                     toIndex = autoCompleteTextView.getText().length();
                 }
@@ -331,12 +327,12 @@ public class ToDoFragment extends Fragment {
                 autoCompleteTextView.addTextChangedListener(textWatcher);
 
                 if (isDiary) {
-                    addTagToLayout(diaryTagContainer, diaryTagList, selectedTag);
+                    diaryTagList.add(selectedTag);
+                    renewTagLayout(diaryTagContainer, diaryTagList);
+                    diaryTagContainer.setVisibility(View.VISIBLE);
                 } else if (toDoItem != null) {
                     toDoItem.getTags().add(selectedTag);
                 }
-                saveToDoDiary(selectedDate);
-                saveTagList(selectedDate);
             }
         }
     }
@@ -363,6 +359,15 @@ public class ToDoFragment extends Fragment {
         }
     }
 
+    private int findNextWhitespaceIndex(String input, int fromIndex) {
+        Pattern pattern = Pattern.compile("\\s");
+        Matcher matcher = pattern.matcher(input);
+        if (matcher.find(fromIndex)) {
+            return matcher.start();
+        }
+        return -1; // No whitespace found
+    }
+
     private void undoLastChange() {
         if (!undoStack.isEmpty()) {
             String lastState = undoStack.pop();
@@ -372,8 +377,6 @@ public class ToDoFragment extends Fragment {
             diaryAutoCompleteTextView.setText(lastState);
             diaryAutoCompleteTextView.setSelection(lastState.length());
             diaryAutoCompleteTextView.addTextChangedListener(textWatcher);
-
-            saveToDoDiary(selectedDate);
         } else {
             Toast.makeText(requireContext(), "No more changes to undo", Toast.LENGTH_SHORT).show();
         }
@@ -388,45 +391,69 @@ public class ToDoFragment extends Fragment {
             diaryAutoCompleteTextView.setText(lastState);
             diaryAutoCompleteTextView.setSelection(lastState.length());
             diaryAutoCompleteTextView.addTextChangedListener(textWatcher);
-
-            saveToDoDiary(selectedDate);
         } else {
             Toast.makeText(requireContext(), "No more changes to redo", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void addTagToLayout(LinearLayout tagContainer, List<String> tagList, String tag) {
-        for (int i = 0; i < tagContainer.getChildCount(); i++) {
-            TextView existingTagTextView = tagContainer.getChildAt(i).findViewById(R.id.tagTextView);
-            if (existingTagTextView.getText().toString().equals(tag)) {
-                Toast.makeText(requireContext(), "Tag already exists", Toast.LENGTH_SHORT).show();
-                return;
+    private void renewTagLayout(LinearLayout tagContainer, Set<String> tagSet) {
+        tagContainer.removeAllViews();
+        if (tagSet.isEmpty()) {
+            Log.d("renewTagLayout", "TagList empty on " + selectedDate);
+            tagContainer.setVisibility(View.GONE);
+        } else {
+            Log.d("renewTagLayout", "TagList not empty on " + selectedDate);
+            tagContainer.setVisibility(View.VISIBLE);
+            for (String tag : tagSet) {
+                LayoutInflater inflater = LayoutInflater.from(requireContext());
+                View tagView = inflater.inflate(R.layout.item_tag, tagContainer, false);
+
+                TextView tagTextView = tagView.findViewById(R.id.tagTextView);
+                int tagWidthPx = (int) (TAG_WIDTH_DP * getResources().getDisplayMetrics().density + 0.5f); // Convert dp to px
+                tagTextView.setText(truncateTextToFit(tag, tagTextView, tagWidthPx));
+
+                // Find the last line or create a new one if necessary
+                LinearLayout lastLine;
+                if (tagContainer.getChildCount() == 0 || !canFitMoreTagsInLine((LinearLayout) tagContainer.getChildAt(tagContainer.getChildCount() - 1))) {
+                    lastLine = new LinearLayout(requireContext());
+                    lastLine.setLayoutParams(new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                    ));
+                    lastLine.setOrientation(LinearLayout.HORIZONTAL);
+                    lastLine.setPadding(8, 8, 8, 8);
+                    tagContainer.addView(lastLine);
+                } else {
+                    lastLine = (LinearLayout) tagContainer.getChildAt(tagContainer.getChildCount() - 1);
+                }
+
+                // Add the tag view to the last line
+                lastLine.addView(tagView);
+
+                // Set the delete button behavior
+                ImageButton deleteButton = tagView.findViewById(R.id.deleteButton);
+                deleteButton.setOnClickListener(v -> {
+                    tagSet.remove(tag);
+                    renewTagLayout(tagContainer, tagSet);
+                });
             }
         }
+    }
 
-        View tagView = LayoutInflater.from(requireContext()).inflate(R.layout.item_tag, tagContainer, false);
-        ((TextView) tagView.findViewById(R.id.tagTextView)).setText(tag);
+    private boolean canFitMoreTagsInLine(LinearLayout line) {
+        return line.getChildCount() < 3;
+    }
 
-        tagView.findViewById(R.id.deleteButton).setOnClickListener(v -> {
-            tagContainer.removeView(tagView);
-            tagList.remove(tag);
-            saveTagList(selectedDate);
-            if (tagContainer.getChildCount() == 0) {
-                tagContainer.setVisibility(View.GONE);
-            }
-        });
-
-        tagContainer.addView(tagView);
-        if (!tagList.contains(tag)) {
-            tagList.add(tag);
-            saveTagList(selectedDate);
-        }
-
-        tagContainer.setVisibility(View.VISIBLE);
+    private String truncateTextToFit(String text, TextView textView, int maxWidth) {
+        TextPaint textPaint = textView.getPaint();
+        int availableWidth = maxWidth - textView.getPaddingLeft() - textView.getPaddingRight();
+        return TextUtils.ellipsize(text, textPaint, availableWidth, TextUtils.TruncateAt.END).toString();
     }
 
     private void loadTagList(String date) {
-        diaryTagList = new ArrayList<>(SharedPreferencesHelper.loadDiaryTags(requireContext(), date));
+        Log.d("loadTagList", "Loading tag list of " + date);
+        diaryTagList = new HashSet<>(SharedPreferencesHelper.loadDiaryTags(requireContext(), date));
+        Log.d("loadTagList", "DiaryTagList of " + date + " is " + diaryTagList);
         Map<String, Set<String>> todoTagsMap = SharedPreferencesHelper.loadToDoTags(requireContext(), date);
 
         checkAndInitializeToDoList();
@@ -434,7 +461,7 @@ public class ToDoFragment extends Fragment {
         for (ToDoItem item : toDoList) {
             Set<String> tags = todoTagsMap.get(item.getId());
             if (tags != null) {
-                item.setTags(new ArrayList<>(tags));
+                item.setTags(new HashSet<>(tags));
             }
         }
 
@@ -442,29 +469,16 @@ public class ToDoFragment extends Fragment {
         updateToDoContainer();
     }
 
-    private void saveTagList(String date) {
-        SharedPreferencesHelper.saveDiaryTags(requireContext(), date, new HashSet<>(diaryTagList));
-
-        Map<String, Set<String>> todoTagsMap = new HashMap<>();
-        for (ToDoItem item : toDoList) {
-            todoTagsMap.put(item.getId(), new HashSet<>(item.getTags()));
-        }
-
-        SharedPreferencesHelper.saveToDoTags(requireContext(), date, todoTagsMap);
-    }
-
     private void updateToDoContainer() {
+        Log.d("updateToDoContainer", "Update To-do container of " + selectedDate);
         todoContainer.removeAllViews();
         checkAndInitializeToDoList();
         if (toDoList.isEmpty()) {
+            Log.d("updateToDoContainer", "toDoList is Empty on " + selectedDate);
             emptyTextView.setVisibility(View.VISIBLE);
-            isTodoEmpty = Boolean.TRUE;
         } else {
             emptyTextView.setVisibility(View.GONE);
-            isTodoEmpty = Boolean.FALSE;
             for (ToDoItem toDoItem : toDoList) {
-                Log.d("updateToDoContainer","toDoItem "+toDoItem);
-                Log.d("updateToDoContainer","toDoItem.getTags() "+toDoItem.getTags());
                 View itemView = LayoutInflater.from(requireContext()).inflate(R.layout.item_todo, todoContainer, false);
                 TextView toDoTextView = itemView.findViewById(R.id.todoTextView);
                 CheckBox toDoCheckBox = itemView.findViewById(R.id.todoCheckBox);
@@ -475,18 +489,16 @@ public class ToDoFragment extends Fragment {
 
                 todoTagContainer.removeAllViews();
                 if (!toDoItem.getTags().isEmpty()) {//태그가 있으면
+                    renewTagLayout(todoTagContainer, toDoItem.getTags());
                     todoTagContainer.setVisibility(View.VISIBLE);
-                    for (String tag : toDoItem.getTags()) {
-                        addTagToLayout(todoTagContainer, toDoItem.getTags(), tag);
-                    }
                 } else {
+                    Log.d("updateToDoContainer", "Tag empty for " + toDoItem);
                     todoTagContainer.setVisibility(View.GONE);
                 }
 
                 toDoCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     toDoItem.setDone(isChecked);
                     sortToDoList();
-                    saveToDoDiary(selectedDate);
                     updateToDoContainer();
                 });
 
@@ -496,15 +508,13 @@ public class ToDoFragment extends Fragment {
         }
     }
 
-    private void updateTagContainer(LinearLayout tagContainer, List<String> tagList) {
+    private void updateTagContainer(LinearLayout tagContainer, Set<String> tagSet) {
         tagContainer.removeAllViews();
-        if (tagList.isEmpty()) {
+        if (tagSet.isEmpty()) {
             tagContainer.setVisibility(View.GONE);
         } else {
+            renewTagLayout(tagContainer, tagSet);
             tagContainer.setVisibility(View.VISIBLE);
-            for (String tag : tagList) {
-                addTagToLayout(tagContainer, tagList, tag);
-            }
         }
     }
 
@@ -530,8 +540,7 @@ public class ToDoFragment extends Fragment {
         activeText.setTextColor(ContextCompat.getColor(requireContext(), R.color.active_text));
         inactiveText.setTextColor(ContextCompat.getColor(requireContext(), R.color.inactive_text));
 
-        loadToDoDiary(selectedDate);
-        emptyTextView.setVisibility(View.GONE);
+        emptyTextView.setVisibility(isDiaryActive || !toDoList.isEmpty() ? View.GONE : View.VISIBLE);
         todoContainer.setVisibility(isDiaryActive ? View.GONE : View.VISIBLE);
         addTodoButton.setVisibility(isDiaryActive ? View.GONE : View.VISIBLE);
         diaryAutoCompleteTextView.setVisibility(isDiaryActive ? View.VISIBLE : View.GONE);
@@ -552,7 +561,7 @@ public class ToDoFragment extends Fragment {
         for (ToDoItem item : toDoList) {
             Set<String> tags = todoTagsMap.get(item.getId());
             if (tags != null) {
-                item.setTags(new ArrayList<>(tags));
+                item.setTags(new HashSet<>(tags));
             }
         }
 
@@ -561,18 +570,15 @@ public class ToDoFragment extends Fragment {
     }
 
     private void saveToDoDiary(String date) {
-        if (diaryAutoCompleteTextView.getVisibility() == View.VISIBLE) {
-            SharedPreferencesHelper.saveDiaryContent(requireContext(), date, diaryAutoCompleteTextView.getText().toString());
-            SharedPreferencesHelper.saveDiaryTags(requireContext(), date, new HashSet<>(diaryTagList));
-        } else {
-            SharedPreferencesHelper.saveToDoList(requireContext(), date, toDoList);
+        SharedPreferencesHelper.saveDiaryContent(requireContext(), date, diaryAutoCompleteTextView.getText().toString());
+        SharedPreferencesHelper.saveDiaryTags(requireContext(), date, new HashSet<>(diaryTagList));
+        SharedPreferencesHelper.saveToDoList(requireContext(), date, toDoList);
 
-            Map<String, Set<String>> todoTagsMap = new HashMap<>();
-            for (ToDoItem item : toDoList) {
-                todoTagsMap.put(item.getId(), new HashSet<>(item.getTags()));
-            }
-            SharedPreferencesHelper.saveToDoTags(requireContext(), date, todoTagsMap);
+        Map<String, Set<String>> todoTagsMap = new HashMap<>();
+        for (ToDoItem item : toDoList) {
+            todoTagsMap.put(item.getId(), new HashSet<>(item.getTags()));
         }
+        SharedPreferencesHelper.saveToDoTags(requireContext(), date, todoTagsMap);
     }
 
     private void checkAndInitializeToDoList() {
@@ -601,11 +607,8 @@ public class ToDoFragment extends Fragment {
             String task = input.getText().toString();
             if (!task.isEmpty()) {
                 newItem.setTask(task);
-                updateTagList(newItem.getTags(), todoTagList);
                 toDoList.add(newItem);
                 sortToDoList();
-                saveToDoDiary(selectedDate);
-                saveTagList(selectedDate);
                 updateToDoContainer();
             } else {
                 Toast.makeText(requireContext(), "Task cannot be empty", Toast.LENGTH_SHORT).show();
@@ -634,10 +637,7 @@ public class ToDoFragment extends Fragment {
             String task = input.getText().toString();
             if (!task.isEmpty()) {
                 toDoItem.setTask(task);
-                updateTagList(toDoItem.getTags(), todoTagList);
                 sortToDoList();
-                saveToDoDiary(selectedDate);
-                saveTagList(selectedDate);
                 updateToDoContainer();
             } else {
                 Toast.makeText(requireContext(), "Task cannot be empty", Toast.LENGTH_SHORT).show();
@@ -647,22 +647,11 @@ public class ToDoFragment extends Fragment {
         builder.setNegativeButton("Delete", (dialog, which) -> {
             toDoList.remove(position);
             sortToDoList();
-            saveToDoDiary(selectedDate);
-            saveTagList(selectedDate);
             updateToDoContainer();
         });
 
         builder.setNeutralButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
-    }
-
-    private void updateTagList(List<String> itemTags, List<String> tagList) {
-        for (String tag : itemTags) {
-            if (!tagList.contains(tag)) {
-                tagList.add(tag);
-            }
-        }
-        saveToDoDiary(selectedDate);
     }
 
     private void sortToDoList() {

@@ -39,6 +39,7 @@ dependencies {
     testImplementation libs.junit
     implementation libs.michalsvec.single.row.calendar
     implementation libs.whiteelephant.monthandyearpicker
+    implementation libs.google.flexbox
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
 }

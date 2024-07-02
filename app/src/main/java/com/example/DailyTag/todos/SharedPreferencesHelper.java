@@ -2,6 +2,7 @@ package com.example.DailyTag.todos;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -58,6 +59,7 @@ public class SharedPreferencesHelper {
     public static void saveDiaryTags(Context context, String date, Set<String> tags) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
+        Log.d("saveDiaryTags", "Saving DiaryTagList of " + DIARY_TAGS_KEY + date + " : " + tags);
         editor.putStringSet(DIARY_TAGS_KEY + date, tags);
         editor.apply();
     }

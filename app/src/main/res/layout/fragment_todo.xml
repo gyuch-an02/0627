@@ -30,7 +30,6 @@
                     android:layout_marginEnd="8dp"
                     android:fontFamily="@font/notosans"
                     android:textStyle="bold"
-                    android:textColor="@android:color/black"
                     android:textSize="24sp" />
 
                 <TextView
@@ -39,7 +38,6 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/notosans"
                     android:textStyle="bold"
-                    android:textColor="@android:color/black"
                     android:textSize="24sp" />
             </LinearLayout>
 
@@ -69,6 +67,8 @@
                     android:text="@string/todo_label"
                     android:textSize="15sp"
                     android:padding="10dp"
+                    android:fontFamily="@font/notosans"
+                    android:textStyle="bold"
                     android:textColor="@color/active_text"
                     android:background="@drawable/toggle_background"/>
 
@@ -81,6 +81,8 @@
                     android:text="@string/diary_label"
                     android:textSize="15sp"
                     android:padding="10dp"
+                    android:fontFamily="@font/notosans"
+                    android:textStyle="bold"
                     android:textColor="@color/inactive_text"
                     android:background="@drawable/toggle_background"/>
             </LinearLayout>
@@ -91,6 +93,7 @@
                 android:layout_height="300dp"
                 android:gravity="center"
                 android:text="@string/empty_todo"
+                android:textColor="@color/primaryTextColor"
                 android:visibility="gone"
                 android:textAlignment="center"
                 android:layout_marginBottom="8dp"/>
@@ -103,6 +106,7 @@
 
             <LinearLayout
                 android:id="@+id/undoredo"
+                style="?android:attr/buttonBarStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -110,14 +114,16 @@
 
                 <Button
                     android:id="@+id/undoButton"
+                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:text="@string/undo_label"
-                    android:visibility="gone"/>
+                    android:visibility="gone" />
 
                 <Button
                     android:id="@+id/redoButton"
+                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
@@ -137,7 +143,6 @@
                 android:minHeight="200dp"
                 android:padding="10dp"
                 android:visibility="gone"
-                android:background="@drawable/diary_background"
                 android:dropDownHeight="200dp"
                 android:dropDownWidth="match_parent" />
 
@@ -145,7 +150,8 @@
                 android:id="@+id/tagContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:orientation="vertical"
+                app:flexWrap="wrap"
                 android:padding="8dp"
                 android:visibility="gone"/>
         </LinearLayout>
