@@ -4,6 +4,7 @@ import android.content.ContentUris;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -26,6 +27,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import com.example.DailyTag.R;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -115,12 +117,9 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
             convertView.setOnClickListener(v -> {
                 Intent intent = new Intent(context, ContactDetailsActivity.class);
                 intent.putExtra("CONTACT_ID", contact.getId());
-                intent.putExtra("CONTACT_NAME", contact.getName());
-                Log.d("setOnClickListener","getPhoneNumber "+contact.getPhoneNumber());
-                intent.putExtra("CONTACT_PHONE_NUMBER", contact.getPhoneNumber());
-                intent.putExtra("CONTACT_PROFILE_IMAGE", contact.getProfileImage());
                 context.startActivity(intent);
             });
+
 
         }
 
@@ -279,33 +278,5 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         void onContactAction(Contact contact);
     }
 
-    public static class Contact {
-        private final long id;
-        private final String name;
-        private final String phoneNumber;
-        private Bitmap profileImage;
 
-        public Contact(long id, String name, String phoneNumber, Bitmap profileImage) {
-            this.id = id;
-            this.name = name;
-            this.phoneNumber = phoneNumber;
-            this.profileImage = profileImage;
-        }
-
-        public long getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getPhoneNumber() {
-            return phoneNumber;
-        }
-
-        public Bitmap getProfileImage() {
-            return profileImage;
-        }
-    }
 }
