@@ -1,5 +1,7 @@
 package com.example.DailyTag.photos;
 
+import static com.example.DailyTag.utils.TagUtils.renewTagLayout;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -35,6 +37,7 @@ public class ImageDialogFragment extends DialogFragment {
 
     private TagViewModel tagViewModel;
     private LinearLayout tagContainer;
+    private String imagePath;
 
     public static ImageDialogFragment newInstance(String imagePath, Set<String> tags) {
         ImageDialogFragment fragment = new ImageDialogFragment();
@@ -56,7 +59,7 @@ public class ImageDialogFragment extends DialogFragment {
         tagContainer = view.findViewById(R.id.tagContainer);
 
         if (getArguments() != null) {
-            String imagePath = getArguments().getString(ARG_IMAGE_PATH);
+            imagePath = getArguments().getString(ARG_IMAGE_PATH);
             assert imagePath != null;
             File imageFile = new File(imagePath);
 
@@ -72,13 +75,14 @@ public class ImageDialogFragment extends DialogFragment {
             ArrayList<String> tags = getArguments().getStringArrayList(ARG_TAGS);
             if (tags != null && !tags.isEmpty()) {
                 tagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
+                tagViewModel.setTags(new HashSet<>(tags)); // Use the new setTags method
+
                 tagViewModel.getTagSet().observe(getViewLifecycleOwner(), tagSet -> {
-                    TagUtils.renewTagLayout(getContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, v -> {
-                        tagViewModel.removeTag(((TextView) v.findViewById(R.id.tagTextView)).getText().toString());
+                    TagUtils.renewTagLayout(getContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, imagePath, v -> {
+                        String tag = ((TextView) v.findViewById(R.id.tagTextView)).getText().toString();
+                        tagViewModel.removeTag(imagePath, tag);
                     });
                 });
-
-                tagViewModel.setTags(new HashSet<>(tags)); // Use the new setTags method
             }
         }
 
