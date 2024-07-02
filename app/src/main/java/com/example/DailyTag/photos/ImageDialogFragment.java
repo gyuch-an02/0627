@@ -70,16 +70,14 @@ public class ImageDialogFragment extends DialogFragment {
             imageDateTextView.setText(imageDate);
 
             ArrayList<String> tags = getArguments().getStringArrayList(ARG_TAGS);
-            if (tags != null && !tags.isEmpty()) {
-                tagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
-                tagViewModel.getTagSet().observe(getViewLifecycleOwner(), tagSet -> {
-                    TagUtils.renewTagLayout(getContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, v -> {
-                        tagViewModel.removeTag(((TextView) v.findViewById(R.id.tagTextView)).getText().toString());
-                    });
+            tagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
+            tagViewModel.setTags(new HashSet<>(tags));
+            tagViewModel.getTagSet().observe(getViewLifecycleOwner(), tagSet -> {
+                TagUtils.renewTagLayout(getContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, v -> {
+                    tagViewModel.removeTag(((TextView) v.findViewById(R.id.tagTextView)).getText().toString());
                 });
-
-                tagViewModel.setTags(new HashSet<>(tags)); // Use the new setTags method
-            }
+            });
+            
         }
 
         return view;
