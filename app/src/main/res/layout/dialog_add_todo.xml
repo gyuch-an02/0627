@@ -15,12 +15,12 @@
         android:layout_gravity="center_horizontal"
         android:paddingBottom="16dp"/>
 
-    <EditText
-        android:id="@+id/inputTask"
+    <AutoCompleteTextView
+        android:id="@+id/todoAutoCompleteTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Enter your task"
-        android:inputType="text"
+        android:inputType="textMultiLine"
         android:padding="8dp"/>
 
 </LinearLayout>

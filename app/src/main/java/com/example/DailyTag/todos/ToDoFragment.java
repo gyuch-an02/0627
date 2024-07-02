@@ -1,5 +1,6 @@
 package com.example.DailyTag.todos;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.Editable;
@@ -35,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -47,6 +49,7 @@ public class ToDoFragment extends Fragment {
     private TextView textTodo;
     private TextView textDiary;
     private AutoCompleteTextView diaryAutoCompleteTextView;
+    private AutoCompleteTextView todoAutoCompleteTextView;
     private List<String> contactNames;
     private TextView tvMonth;
     private TextView tvYear;
@@ -56,10 +59,12 @@ public class ToDoFragment extends Fragment {
     private Boolean isTodoEmpty;
     private Calendar calendar;
     private int currentMonth;
-    private ArrayAdapter<String> adapter;
+    private ArrayAdapter<String> contactNameAdapter;
+    private List<String> diaryTagList;
+    private List<String> todoTagList;  // 투두 태그 목록 추가
     private LinearLayout tagContainer;
-    private List<String> tagList;
 
+    @SuppressLint("MissingInflatedId")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -75,13 +80,17 @@ public class ToDoFragment extends Fragment {
         tvYear = view.findViewById(R.id.tv_year);
         monthYear = view.findViewById(R.id.month_year);
         diaryAutoCompleteTextView = view.findViewById(R.id.diaryAutoCompleteTextView);
-        contactNames = ContactsFragment.getContactNames();
         tagContainer = view.findViewById(R.id.tagContainer);
+
+        contactNames = ContactsFragment.getContactNames();  // 연락처 이름 가져오기
+
+        contactNameAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, contactNames);
 
         isTodoEmpty = Boolean.TRUE;
 
         toDoList = new ArrayList<>();
-        tagList = new ArrayList<>();
+        diaryTagList = new ArrayList<>(SharedPreferencesHelper.loadDiaryTags(getContext()));  // 다이어리 태그 불러오기
+        todoTagList = new ArrayList<>(SharedPreferencesHelper.loadToDoTags(getContext()));  // 투두 태그 불러오기
 
         selectedDate = getCurrentDate();
         loadToDoList(selectedDate);
@@ -93,7 +102,7 @@ public class ToDoFragment extends Fragment {
         addTodoButton.setOnClickListener(v -> showAddToDoDialog());
 
         setUpToggle();
-        setUpAutoCompleteTextView();
+        setupAutoCompleteTextView(diaryAutoCompleteTextView, contactNameAdapter, true);
 
         return view;
     }
@@ -191,7 +200,6 @@ public class ToDoFragment extends Fragment {
         singleRowCalendar.scrollToPosition(targetDate-1);
     }
 
-
     private void setUpMonthYearDisplay() {
         updateMonthYearDisplay();
     }
@@ -256,12 +264,10 @@ public class ToDoFragment extends Fragment {
         return list;
     }
 
-    private void setUpAutoCompleteTextView() {
-        adapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, contactNames);
-        diaryAutoCompleteTextView.setAdapter(adapter);
+    private void setupAutoCompleteTextView(AutoCompleteTextView autoCompleteTextView, ArrayAdapter<String> adapter, boolean isDiary) {
+        autoCompleteTextView.setAdapter(adapter);
 
-        diaryAutoCompleteTextView.addTextChangedListener(new TextWatcher() {
+        autoCompleteTextView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 // Do nothing
@@ -274,21 +280,21 @@ public class ToDoFragment extends Fragment {
                     int atIndex = input.indexOf("@");
                     String query = input.substring(atIndex + 1);
                     if (!query.isEmpty()) {
-                        diaryAutoCompleteTextView.post(() -> adapter.getFilter().filter(query, resultCount -> {
+                        autoCompleteTextView.post(() -> adapter.getFilter().filter(query, resultCount -> {
                             if (resultCount > 0) {
-                                diaryAutoCompleteTextView.showDropDown();
+                                autoCompleteTextView.showDropDown();
                             } else {
-                                diaryAutoCompleteTextView.dismissDropDown();
+                                autoCompleteTextView.dismissDropDown();
                             }
                         }));
                     } else {
-                        diaryAutoCompleteTextView.post(() -> {
+                        autoCompleteTextView.post(() -> {
                             adapter.getFilter().filter("");
-                            diaryAutoCompleteTextView.showDropDown();
+                            autoCompleteTextView.showDropDown();
                         });
                     }
                 } else {
-                    diaryAutoCompleteTextView.post(() -> diaryAutoCompleteTextView.dismissDropDown());
+                    autoCompleteTextView.post(() -> autoCompleteTextView.dismissDropDown());
                 }
             }
 
@@ -298,32 +304,34 @@ public class ToDoFragment extends Fragment {
             }
         });
 
-        diaryAutoCompleteTextView.setOnItemClickListener((parent, view, position, id) -> {
+        autoCompleteTextView.setOnItemClickListener((parent, view, position, id) -> {
             String selectedTag = adapter.getItem(position);
             if (selectedTag != null) {
-                String currentText = diaryAutoCompleteTextView.getText().toString();
+                String currentText = autoCompleteTextView.getText().toString();
                 int atIndex = currentText.lastIndexOf("@");
                 String newText = currentText.substring(0, atIndex + 1) + selectedTag + " ";
-                diaryAutoCompleteTextView.setText(newText);
-                diaryAutoCompleteTextView.setSelection(newText.length());
-                addTagToLayout(selectedTag);
+                autoCompleteTextView.setText(newText);
+                autoCompleteTextView.setSelection(newText.length());
+                if (isDiary) {
+                    addTagToLayout(tagContainer, selectedTag);
+                }
             }
         });
 
-        diaryAutoCompleteTextView.setOnFocusChangeListener((v, hasFocus) -> {
+        autoCompleteTextView.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
-                diaryAutoCompleteTextView.dismissDropDown();
+                autoCompleteTextView.dismissDropDown();
             } else {
-                String input = diaryAutoCompleteTextView.getText().toString();
+                String input = autoCompleteTextView.getText().toString();
                 if (input.contains("@")) {
                     int atIndex = input.indexOf("@");
                     String query = input.substring(atIndex + 1);
                     if (!query.isEmpty()) {
                         adapter.getFilter().filter(query, count -> {
                             if (count > 0) {
-                                diaryAutoCompleteTextView.showDropDown();
+                                autoCompleteTextView.showDropDown();
                             } else {
-                                diaryAutoCompleteTextView.dismissDropDown();
+                                autoCompleteTextView.dismissDropDown();
                             }
                         });
                     }
@@ -331,17 +339,17 @@ public class ToDoFragment extends Fragment {
             }
         });
 
-        diaryAutoCompleteTextView.setOnClickListener(v -> {
-            String input = diaryAutoCompleteTextView.getText().toString();
+        autoCompleteTextView.setOnClickListener(v -> {
+            String input = autoCompleteTextView.getText().toString();
             if (input.contains("@")) {
                 int atIndex = input.indexOf("@");
                 String query = input.substring(atIndex + 1);
                 if (!query.isEmpty()) {
                     adapter.getFilter().filter(query, count -> {
                         if (count > 0) {
-                            diaryAutoCompleteTextView.showDropDown();
+                            autoCompleteTextView.showDropDown();
                         } else {
-                            diaryAutoCompleteTextView.dismissDropDown();
+                            autoCompleteTextView.dismissDropDown();
                         }
                     });
                 }
@@ -349,7 +357,7 @@ public class ToDoFragment extends Fragment {
         });
     }
 
-    private void addTagToLayout(String tag) {
+    private void addTagToLayout(LinearLayout tagContainer, String tag) {
         tagContainer.setVisibility(View.VISIBLE);
 
         TextView tagView = new TextView(requireContext());
@@ -359,7 +367,7 @@ public class ToDoFragment extends Fragment {
         tagView.setTextColor(ContextCompat.getColor(requireContext(), R.color.white));
         tagView.setOnClickListener(v -> {
             tagContainer.removeView(tagView);
-            tagList.remove(tag);
+            diaryTagList.remove(tag);
             saveTagList(selectedDate);
             if (tagContainer.getChildCount() == 0) {
                 tagContainer.setVisibility(View.GONE);
@@ -367,30 +375,31 @@ public class ToDoFragment extends Fragment {
         });
 
         tagContainer.addView(tagView);
-        if (!tagList.contains(tag)) {
-            tagList.add(tag);
+        if (!diaryTagList.contains(tag)) {
+            diaryTagList.add(tag);
             saveTagList(selectedDate);
         }
     }
 
-
     private void loadTagList(String date) {
-        tagList = SharedPreferencesHelper.loadTagList(requireContext(), date);
+        diaryTagList = new ArrayList<>(SharedPreferencesHelper.loadDiaryTags(getContext()));
+        todoTagList = new ArrayList<>(SharedPreferencesHelper.loadToDoTags(getContext()));
         updateTagContainer();
     }
 
     private void saveTagList(String date) {
-        SharedPreferencesHelper.saveTagList(requireContext(), date, tagList);
+        SharedPreferencesHelper.saveDiaryTags(getContext(), new HashSet<>(diaryTagList));
+        SharedPreferencesHelper.saveToDoTags(getContext(), new HashSet<>(todoTagList));
     }
 
     private void updateTagContainer() {
         tagContainer.removeAllViews();
-        if (tagList.isEmpty()) {
+        if (diaryTagList.isEmpty()) {
             tagContainer.setVisibility(View.GONE);
         } else {
             tagContainer.setVisibility(View.VISIBLE);
-            for (String tag : tagList) {
-                addTagToLayout(tag);
+            for (String tag : diaryTagList) {
+                addTagToLayout(tagContainer, tag);
             }
         }
     }
@@ -408,6 +417,7 @@ public class ToDoFragment extends Fragment {
         textDiary.setTextColor(ContextCompat.getColor(requireContext(), R.color.inactive_text));
 
         diaryAutoCompleteTextView.setVisibility(View.GONE);
+        tagContainer.setVisibility(View.GONE);  // 태그 컨테이너 숨기기
         if (isTodoEmpty) {
             emptyTextView.setVisibility(View.VISIBLE);
         }
@@ -426,6 +436,7 @@ public class ToDoFragment extends Fragment {
         todoContainer.setVisibility(View.GONE);
         addTodoButton.setVisibility(View.GONE);
         diaryAutoCompleteTextView.setVisibility(View.VISIBLE);
+        tagContainer.setVisibility(View.VISIBLE);  // 태그 컨테이너 보이기
 
         loadToDoList(selectedDate);
 
@@ -465,10 +476,16 @@ public class ToDoFragment extends Fragment {
 
     private void showAddToDoDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Add To-Do");
 
-        final EditText input = new EditText(requireContext());
-        builder.setView(input);
+        // Inflate the dialog's layout
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_add_todo, null);
+
+        final AutoCompleteTextView input = dialogView.findViewById(R.id.todoAutoCompleteTextView);
+        input.setThreshold(1);  // Show suggestions after one character
+        setupAutoCompleteTextView(input, contactNameAdapter, false);
+
+        builder.setView(dialogView); // Set the view of the dialog here
 
         builder.setPositiveButton("Add", (dialog, which) -> {
             String task = input.getText().toString();
@@ -478,6 +495,7 @@ public class ToDoFragment extends Fragment {
                 sortToDoList();  // Sort after adding a new item
                 saveToDoList(selectedDate);
                 updateToDoContainer();
+                updateTagList(task, todoTagList); // Update tag list here
             } else {
                 Toast.makeText(requireContext(), "Task cannot be empty", Toast.LENGTH_SHORT).show();
             }
@@ -491,10 +509,16 @@ public class ToDoFragment extends Fragment {
     private void showModifyDeleteDialog(int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Modify/Delete To-Do");
+        // Inflate the dialog's layout
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_add_todo, null);
+        builder.setView(dialogView);
 
-        final EditText input = new EditText(requireContext());
+        final AutoCompleteTextView input = dialogView.findViewById(R.id.todoAutoCompleteTextView);
+        input.setThreshold(1);  // Show suggestions after one character
+        setupAutoCompleteTextView(input, contactNameAdapter, false);  // Setup autocomplete
+
         input.setText(toDoList.get(position).getTask());
-        builder.setView(input);
 
         builder.setPositiveButton("Modify", (dialog, which) -> {
             String task = input.getText().toString();
@@ -503,6 +527,7 @@ public class ToDoFragment extends Fragment {
                 sortToDoList();  // Sort after modifying an item
                 saveToDoList(selectedDate);
                 updateToDoContainer();
+                updateTagList(input.getText().toString(), todoTagList);
             } else {
                 Toast.makeText(requireContext(), "Task cannot be empty", Toast.LENGTH_SHORT).show();
             }
@@ -518,6 +543,16 @@ public class ToDoFragment extends Fragment {
         builder.setNeutralButton("Cancel", (dialog, which) -> dialog.cancel());
 
         builder.show();
+    }
+
+
+    private void updateTagList(String text, List<String> tagList) {
+        for (String word : text.split(" ")) {
+            if (word.startsWith("@") && !tagList.contains(word)) {
+                tagList.add(word);
+            }
+        }
+        SharedPreferencesHelper.saveToDoTags(getContext(), new HashSet<>(tagList));
     }
 
     private void updateToDoContainer() {
@@ -547,7 +582,7 @@ public class ToDoFragment extends Fragment {
                     updateToDoContainer();
                 });
 
-                itemView.setOnClickListener(v -> showModifyDeleteDialog(position));
+                toDoTextView.setOnClickListener(v -> showModifyDeleteDialog(position));
 
                 todoContainer.addView(itemView);
             }
@@ -555,14 +590,9 @@ public class ToDoFragment extends Fragment {
     }
 
     private void sortToDoList() {
-        toDoList.sort((o1, o2) -> {
-            if (o1.isDone() == o2.isDone()) {
-                // If both items are either done or not done, sort by timestamp (newer first)
-                return Long.compare(o2.getTimestamp(), o1.getTimestamp());
-            } else {
-                // Otherwise, sort by done status (not done items first)
-                return Boolean.compare(o1.isDone(), o2.isDone());
-            }
-        });
+        toDoList.sort((o1, o2) -> Boolean.compare(o1.isDone(), o2.isDone()));
     }
 }
+
+
+

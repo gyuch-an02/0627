@@ -1,15 +1,20 @@
 package com.example.DailyTag.todos;
 
+import java.util.List;
+
 public class ToDoItem {
     private String task;
     private boolean done;
-    private long timestamp; // new field for the creation timestamp
+    private List<String> tags;
 
     public ToDoItem(String task, boolean done) {
         this.task = task;
         this.done = done;
-        this.timestamp = System.currentTimeMillis(); // set creation time when item is created
+        this.tags = tags;
     }
+    public List<String> getTags() { return tags; }
+
+    public void setTags(List<String> tags) { this.tags = tags; }
 
     public String getTask() {
         return task;
@@ -27,7 +32,4 @@ public class ToDoItem {
         this.done = done;
     }
 
-    public long getTimestamp() {
-        return timestamp;
-    }
 }
