@@ -5,19 +5,15 @@ import java.util.Set;
 import java.util.UUID;
 
 public class ToDoItem {
-    private final String id;
     private String task;
     private boolean done;
     private Set<String> tags;
 
     public ToDoItem(String task, boolean done) {
-        this.id = UUID.randomUUID().toString(); // Generate a unique ID
         this.task = task;
         this.done = done;
         this.tags = new HashSet<>();
     }
-
-    public String getId() { return id; }
 
     public Set<String> getTags() { return tags; }
     public void setTags(Set<String> tags) { this.tags = tags; }

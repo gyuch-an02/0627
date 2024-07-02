@@ -2,6 +2,7 @@ package com.example.DailyTag.photos;
 
 import android.Manifest;
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -38,7 +39,6 @@ import java.util.Locale;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 public class PhotosFragment extends Fragment {
@@ -252,6 +252,25 @@ public class PhotosFragment extends Fragment {
         }
         groupedPhotoAdapter.updateData(groupedPhotos);
         groupedPhotoAdapter.setPhotoTags(photoTags); // Set photo tags in the adapter
+    }
+
+    public static String getImagePathByImageFileName(Context context, String imageFileName) {
+        String imagePath = null;
+
+        Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        String[] projection = {MediaStore.Images.Media.DATA};
+        String selection = MediaStore.Images.Media.DISPLAY_NAME + " = ?";
+        String[] selectionArgs = {imageFileName};
+
+        Cursor cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            imagePath = cursor.getString(columnIndex);
+            cursor.close();
+        }
+
+        return imagePath;
     }
 
     @Override

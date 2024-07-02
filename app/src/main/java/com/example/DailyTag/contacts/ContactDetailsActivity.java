@@ -1,7 +1,11 @@
 package com.example.DailyTag.contacts;
 
+import static com.example.DailyTag.photos.PhotosFragment.getImagePathByImageFileName;
+
 import android.app.Application;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
@@ -14,6 +18,7 @@ import com.example.DailyTag.todos.ToDoItem;
 import com.example.DailyTag.utils.Tag;
 import com.example.DailyTag.utils.TagRepository;
 
+import java.io.File;
 import java.util.*;
 
 public class ContactDetailsActivity extends AppCompatActivity {
@@ -53,7 +58,8 @@ public class ContactDetailsActivity extends AppCompatActivity {
 
         // Load entries
         if (contactName != null) {
-            loadEntries(this, contactName);
+            Log.d("loadEntries", "Load entries for " + contactName);
+            loadEntries(this, contactId);
         }
     }
 
@@ -70,12 +76,10 @@ public class ContactDetailsActivity extends AppCompatActivity {
         phoneTextView.setText(contact.getPhoneNumber());
     }
 
-    private void loadEntries(Context context, String contactName) {
+    private void loadEntries(Context context, long contactId) {
         TagRepository tagRepository = TagRepository.getInstance((Application) context.getApplicationContext());
-        Map<String, List<Map.Entry<String, String>>> entriesByDate = new TreeMap<>(Collections.reverseOrder());
-        long contactId = ContactManager.getContactIdByName(context, contactName);
+        Map<String, List<EntryItem>> entriesByDate = new TreeMap<>(Collections.reverseOrder());
 
-        // Load diary entries
         Map<String, ?> allEntries = tagRepository.getAllEntries();
         for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
             if (entry.getKey().endsWith("_diary")) {
@@ -88,42 +92,57 @@ public class ContactDetailsActivity extends AppCompatActivity {
                         if (!entriesByDate.containsKey(date)) {
                             entriesByDate.put(date, new ArrayList<>());
                         }
-                        entriesByDate.get(date).add(new AbstractMap.SimpleEntry<>("Diary", diaryContent));
+                        entriesByDate.get(date).add(new EntryItem(EntryItem.TYPE_DIARY, diaryContent));
                         break;
                     }
                 }
             } else if (entry.getKey().contains("_todo_tag")) {
-                Log.d("loadEntries", entry.getKey());
                 String[] parts = entry.getKey().split("_");
                 String date = parts[0];
                 int index = Integer.parseInt(parts[1]);
                 List<ToDoItem> todos = tagRepository.loadToDoList(date);
-
                 if (index < todos.size()) {
                     ToDoItem todo = todos.get(index);
                     Set<Tag> todoTags = tagRepository.loadTags(entry.getKey());
 
                     for (Tag tag : todoTags) {
-                        if (tag.getContactId() == contactId && todo.getId().equals(tag.getTagName())) {
+                        if (tag.getContactId() == contactId) {
                             if (!entriesByDate.containsKey(date)) {
                                 entriesByDate.put(date, new ArrayList<>());
                             }
-                            entriesByDate.get(date).add(new AbstractMap.SimpleEntry<>("To-Do", todo.getTask()));
+                            entriesByDate.get(date).add(new EntryItem(EntryItem.TYPE_TODO, todo.getTask()));
                             break;
                         }
                     }
                 }
             } else if (entry.getKey().endsWith("_image")) {
-                String imageFileName = entry.getKey().substring(0, entry.getKey().indexOf('_'));
-                String imagePath = (String) entry.getValue();
-                Set<Tag> imageTags = tagRepository.loadTags(imageFileName + "_image");
+                String[] parts = entry.getKey().split("_");
+                String date = parts[parts.length - 2];
+                StringBuilder imageFileNameBuilder = new StringBuilder();
+
+                for (int i = 0; i < parts.length - 2; i++) {
+                    if (i > 0) {
+                        imageFileNameBuilder.append("_");
+                    }
+                    imageFileNameBuilder.append(parts[i]);
+                }
+
+                String imageFileName = imageFileNameBuilder.toString();
+                String imagePath = getImagePathByImageFileName(context, imageFileName);
+                Set<Tag> imageTags = tagRepository.loadTags(imageFileName + "_" + date + "_image");
 
                 for (Tag tag : imageTags) {
                     if (tag.getContactId() == contactId) {
-                        if (!entriesByDate.containsKey(imageFileName)) {
-                            entriesByDate.put(imageFileName, new ArrayList<>());
+                        if (!entriesByDate.containsKey(date)) {
+                            entriesByDate.put(date, new ArrayList<>());
                         }
-                        entriesByDate.get(imageFileName).add(new AbstractMap.SimpleEntry<>("Image", imagePath));
+
+                        if (imagePath != null) {
+                            Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+                            ImageView imageView = new ImageView(context);
+                            imageView.setImageBitmap(bitmap);
+                            entriesByDate.get(date).add(new EntryItem(EntryItem.TYPE_IMAGE, imageView));
+                        }
                         break;
                     }
                 }

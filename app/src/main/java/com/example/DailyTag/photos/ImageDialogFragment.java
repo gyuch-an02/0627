@@ -76,14 +76,14 @@ public class ImageDialogFragment extends DialogFragment {
             imageView.setImageBitmap(bitmap);
 
             String imageName = imageFile.getName();
-            String imageDate = DateFormat.format("yyyy-MM-dd hh:mm:ss", new Date(imageFile.lastModified())).toString();
+            String imageDate = DateFormat.format("yyyy-MM-dd", new Date(imageFile.lastModified())).toString();
 
             imageNameTextView.setText(imageName);
             imageDateTextView.setText(imageDate);
 
             ArrayList<String> tags = getArguments().getStringArrayList(ARG_TAGS);
             tagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
-            identifier = imageFile.getName() + "_image"; // Unique identifier for the image tags
+            identifier = imageFile.getName() + "_" + imageDate + "_image"; // Unique identifier for the image tags
 
             tagViewModel.loadTags(identifier).observe(getViewLifecycleOwner(), tagSet -> {
                 TagUtils.renewTagLayout(getContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, identifier, v -> {

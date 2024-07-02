@@ -72,31 +72,4 @@ public class TagRepository {
     public Map<String, ?> getAllEntries() {
         return sharedPreferences.getAll();
     }
-
-    public Map<String, String> loadDiaryEntries() {
-        Map<String, String> diaryEntries = new HashMap<>();
-        Map<String, ?> allEntries = sharedPreferences.getAll();
-
-        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-            if (entry.getKey().startsWith("diary_")) {
-                diaryEntries.put(entry.getKey(), (String) entry.getValue());
-            }
-        }
-        return diaryEntries;
-    }
-
-    public Map<String, List<ToDoItem>> loadTodoItems() {
-        Map<String, List<ToDoItem>> todoItems = new HashMap<>();
-        Map<String, ?> allEntries = sharedPreferences.getAll();
-
-        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-            if (entry.getKey().startsWith("todo_")) {
-                String json = (String) entry.getValue();
-                Type type = new TypeToken<List<ToDoItem>>() {}.getType();
-                List<ToDoItem> items = gson.fromJson(json, type);
-                todoItems.put(entry.getKey(), items);
-            }
-        }
-        return todoItems;
-    }
 }
