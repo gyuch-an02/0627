@@ -3,6 +3,7 @@ package com.example.DailyTag.utils;
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -24,8 +25,10 @@ public class TagUtils {
         LayoutInflater inflater = LayoutInflater.from(context);
         int tagCount = 0;
         LinearLayout currentLine = createNewLine(context, tagContainer);
+        Log.d("renewTagLayout", "getTagSet: " + tagViewModel.getTagSet().getValue());
+        Log.d("renewTagLayout", "loadTags(" + identifier + "): " + tagViewModel.loadTags(identifier).getValue());
 
-        for (String tag : tagViewModel.getTagSet().getValue()) {
+        for (String tag : tagViewModel.loadTags(identifier).getValue()) {
             if (tagCount == 3) {
                 currentLine = createNewLine(context, tagContainer);
                 tagCount = 0;

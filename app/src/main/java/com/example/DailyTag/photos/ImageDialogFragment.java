@@ -1,7 +1,5 @@
 package com.example.DailyTag.photos;
 
-import static com.example.DailyTag.utils.TagUtils.renewTagLayout;
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -56,7 +54,7 @@ public class ImageDialogFragment extends DialogFragment {
         ImageView imageView = view.findViewById(R.id.enlargedImageView);
         TextView imageNameTextView = view.findViewById(R.id.imageNameTextView);
         TextView imageDateTextView = view.findViewById(R.id.imageDateTextView);
-        tagContainer = view.findViewById(R.id.tagContainer);
+        tagContainer = view.findViewById(R.id.diaryTagContainer);
 
         if (getArguments() != null) {
             imagePath = getArguments().getString(ARG_IMAGE_PATH);
@@ -76,13 +74,11 @@ public class ImageDialogFragment extends DialogFragment {
             tagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
             tagViewModel.setTags(new HashSet<>(tags));
             tagViewModel.getTagSet().observe(getViewLifecycleOwner(), tagSet -> {
-                TagUtils.renewTagLayout(getContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, v -> {
-                    tagViewModel.removeTag(((TextView) v.findViewById(R.id.tagTextView)).getText().toString());
+                TagUtils.renewTagLayout(getContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, "", v -> {
+                    tagViewModel.removeTag("", ((TextView) v.findViewById(R.id.tagTextView)).getText().toString());
                 });
             });
-
         }
-
         return view;
     }
 

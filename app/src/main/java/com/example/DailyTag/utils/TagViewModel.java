@@ -46,11 +46,9 @@ public class TagViewModel extends AndroidViewModel {
     }
 
     public void addTag(String identifier, String tag) {
-        Set<String> tags = tagSet.getValue();
-        if (tags != null) {
-            tags.add(tag);
-            saveTags(identifier, tags);
-        }
+        Set<String> tags = loadTags(identifier).getValue();
+        tags.add(tag);
+        tagRepository.saveTags(identifier, tags);
     }
 
     public void removeTag(String identifier, String tag) {
