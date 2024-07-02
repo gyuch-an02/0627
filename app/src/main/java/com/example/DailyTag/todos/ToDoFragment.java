@@ -269,10 +269,10 @@ public class ToDoFragment extends Fragment {
     }
 
     private void setupAutoCompleteTextView(AutoCompleteTextView autoCompleteTextView, ArrayAdapter<String> adapter) {
-        setupAutoCompleteTextView(autoCompleteTextView, adapter, true, null);
+        setupAutoCompleteTextView(autoCompleteTextView, adapter, true, null, 0);
     }
 
-    private void setupAutoCompleteTextView(AutoCompleteTextView autoCompleteTextView, ArrayAdapter<String> adapter, boolean isDiary, ToDoItem toDoItem) {
+    private void setupAutoCompleteTextView(AutoCompleteTextView autoCompleteTextView, ArrayAdapter<String> adapter, boolean isDiary, ToDoItem toDoItem, int pos) {
         autoCompleteTextView.setAdapter(adapter);
 
         textWatcher = new TextWatcher() {
@@ -295,7 +295,10 @@ public class ToDoFragment extends Fragment {
 
         autoCompleteTextView.addTextChangedListener(textWatcher);
 
-        autoCompleteTextView.setOnItemClickListener((parent, view, position, id) -> handleAutoCompleteItemClick(autoCompleteTextView, adapter.getItem(position), isDiary, toDoItem));
+        autoCompleteTextView.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedTag = adapter.getItem(position);
+            handleAutoCompleteItemClick(autoCompleteTextView, selectedTag, isDiary, toDoItem, pos);
+        });;
         autoCompleteTextView.setOnFocusChangeListener((v, hasFocus) -> handleAutoCompleteFocusChange(autoCompleteTextView, adapter, hasFocus));
     }
 
@@ -323,7 +326,7 @@ public class ToDoFragment extends Fragment {
         }
     }
 
-    private void handleAutoCompleteItemClick(AutoCompleteTextView autoCompleteTextView, String selectedTag, boolean isDiary, ToDoItem toDoItem) {
+    private void handleAutoCompleteItemClick(AutoCompleteTextView autoCompleteTextView, String selectedTag, boolean isDiary, ToDoItem toDoItem, int position) {
         if (selectedTag != null) {
             int cursorPosition = autoCompleteTextView.getSelectionStart();
             Editable editable = autoCompleteTextView.getText();
@@ -355,7 +358,8 @@ public class ToDoFragment extends Fragment {
                     });
                     diaryTagContainer.setVisibility(View.VISIBLE);
                 } else if (toDoItem != null) {
-                    tagViewModel.addTag(toDoItem.getId(), new Tag(contactId, selectedTag, selectedTag));
+                    String todoIdentifier = selectedDate + "_" + position + "_todo";
+                    tagViewModel.addTag(todoIdentifier, new Tag(contactId, selectedTag, selectedTag));
                 }
             }
         }
@@ -555,7 +559,7 @@ public class ToDoFragment extends Fragment {
         input.setThreshold(1);
 
         ToDoItem newItem = new ToDoItem("", false);
-        setupAutoCompleteTextView(input, contactNameAdapter, false, newItem);
+        setupAutoCompleteTextView(input, contactNameAdapter, false, newItem, toDoList.size());
 
         builder.setView(dialogView);
         builder.setPositiveButton("Add", (dialog, which) -> {
@@ -586,7 +590,7 @@ public class ToDoFragment extends Fragment {
 
         ToDoItem toDoItem = toDoList.get(position);
         String identifier = selectedDate + "_" + position + "_todo"; // Unique identifier for each ToDoItem
-        setupAutoCompleteTextView(input, contactNameAdapter, false, toDoItem);
+        setupAutoCompleteTextView(input, contactNameAdapter, false, toDoItem, toDoList.size());
         input.setText(toDoItem.getTask());
 
         builder.setPositiveButton("Modify", (dialog, which) -> {

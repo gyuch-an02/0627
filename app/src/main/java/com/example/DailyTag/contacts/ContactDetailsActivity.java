@@ -92,15 +92,16 @@ public class ContactDetailsActivity extends AppCompatActivity {
                         break;
                     }
                 }
-            } else if (entry.getKey().endsWith("_todo")) {
-                String date = entry.getKey().substring(0, entry.getKey().indexOf('_'));
-                String identifier = entry.getKey();
-                int index = Integer.parseInt(identifier.substring(identifier.lastIndexOf('_', identifier.lastIndexOf('_') - 1) + 1, identifier.lastIndexOf('_')));
+            } else if (entry.getKey().contains("_todo")) {
+                Log.d("loadEntries", entry.getKey());
+                String[] parts = entry.getKey().split("_");
+                String date = parts[0];
+                int index = Integer.parseInt(parts[1]);
                 List<ToDoItem> todos = tagRepository.loadToDoList(date);
 
                 if (index < todos.size()) {
                     ToDoItem todo = todos.get(index);
-                    Set<Tag> todoTags = tagRepository.loadTags(identifier);
+                    Set<Tag> todoTags = tagRepository.loadTags(entry.getKey());
 
                     for (Tag tag : todoTags) {
                         if (tag.getContactId() == contactId && todo.getId().equals(tag.getTagName())) {
