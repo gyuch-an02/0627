@@ -58,6 +58,7 @@ public class ToDoFragment extends Fragment {
     private TextView textTodo;
     private TextView textDiary;
     private AutoCompleteTextView diaryAutoCompleteTextView;
+    private LinearLayout undoRedoContainer;
     private TextView tvMonth;
     private TextView tvYear;
     private LinearLayout monthYear;
@@ -106,6 +107,7 @@ public class ToDoFragment extends Fragment {
         diaryTagContainer = view.findViewById(R.id.tagContainer);
         Button undoButton = view.findViewById(R.id.undoButton);
         Button redoButton = view.findViewById(R.id.redoButton);
+        undoRedoContainer = view.findViewById(R.id.undoredo);
         undoButton.setOnClickListener(v -> undoLastChange());
         redoButton.setOnClickListener(v -> redoLastChange());
 
@@ -528,15 +530,15 @@ public class ToDoFragment extends Fragment {
 
     private void activateTodo() {
         isDiaryActive = false;
-        toggleViews(textTodo, textDiary, diaryAutoCompleteTextView, diaryTagContainer, todoContainer, addTodoButton);
+        toggleViews(textTodo, textDiary, diaryAutoCompleteTextView, diaryTagContainer, todoContainer, addTodoButton, undoRedoContainer);
     }
 
     private void activateDiary() {
         isDiaryActive = true;
-        toggleViews(textDiary, textTodo, diaryAutoCompleteTextView, diaryTagContainer, todoContainer, addTodoButton);
+        toggleViews(textDiary, textTodo, diaryAutoCompleteTextView, diaryTagContainer, todoContainer, addTodoButton, undoRedoContainer);
     }
 
-    private void toggleViews(TextView activeText, TextView inactiveText, AutoCompleteTextView diaryAutoCompleteTextView, LinearLayout diaryTagContainer, LinearLayout todoContainer, FloatingActionButton addTodoButton) {
+    private void toggleViews(TextView activeText, TextView inactiveText, AutoCompleteTextView diaryAutoCompleteTextView, LinearLayout diaryTagContainer, LinearLayout todoContainer, FloatingActionButton addTodoButton, LinearLayout undoRedoContainer) {
         activeText.setTextColor(ContextCompat.getColor(requireContext(), R.color.active_text));
         inactiveText.setTextColor(ContextCompat.getColor(requireContext(), R.color.inactive_text));
 
@@ -545,6 +547,7 @@ public class ToDoFragment extends Fragment {
         addTodoButton.setVisibility(isDiaryActive ? View.GONE : View.VISIBLE);
         diaryAutoCompleteTextView.setVisibility(isDiaryActive ? View.VISIBLE : View.GONE);
         diaryTagContainer.setVisibility(isDiaryActive ? View.VISIBLE : View.GONE);
+        undoRedoContainer.setVisibility(isDiaryActive ? View.VISIBLE : View.GONE);
 
         inactiveText.setOnClickListener(v -> {
             if (isDiaryActive) activateTodo();
@@ -552,7 +555,7 @@ public class ToDoFragment extends Fragment {
         });
         activeText.setOnClickListener(null);
     }
-
+    
     private void loadToDoDiary(String date) {
         toDoList = SharedPreferencesHelper.loadToDoList(requireContext(), date);
         checkAndInitializeToDoList();
