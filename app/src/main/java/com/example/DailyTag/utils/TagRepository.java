@@ -3,6 +3,8 @@ package com.example.DailyTag.utils;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
 import com.example.DailyTag.todos.ToDoItem;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -53,6 +55,7 @@ public class TagRepository {
     }
 
     public void saveDiaryContent(String date, String content) {
+        Log.d("TagRepository", "Saved Diary Content with identifier " + date + "_diary_content");
         sharedPreferences.edit().putString(date + "_diary_content", content).apply();
     }
 }

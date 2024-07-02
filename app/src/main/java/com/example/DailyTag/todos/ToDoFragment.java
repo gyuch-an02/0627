@@ -24,25 +24,23 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.DailyTag.R;
-import com.example.DailyTag.utils.TagUtils;
-import com.example.DailyTag.utils.TagManager;
-import com.example.DailyTag.utils.TagViewModel;
 import com.example.DailyTag.contacts.ContactManager;
+import com.example.DailyTag.utils.TagUtils;
+import com.example.DailyTag.utils.TagViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.michalsvec.singlerowcalendar.calendar.CalendarChangesObserver;
 import com.michalsvec.singlerowcalendar.calendar.CalendarViewManager;
 import com.michalsvec.singlerowcalendar.calendar.SingleRowCalendar;
 import com.michalsvec.singlerowcalendar.calendar.SingleRowCalendarAdapter;
-
 import com.whiteelephant.monthpicker.MonthPickerDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.HashSet;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,7 +68,7 @@ public class ToDoFragment extends Fragment {
     private TextWatcher textWatcher;
     private Stack<String> undoStack;
     private Stack<String> redoStack;
-    private TagManager tagManager;
+    private boolean isInitializationComplete = false;
 
     @SuppressLint("MissingInflatedId")
     @Nullable
@@ -119,10 +117,16 @@ public class ToDoFragment extends Fragment {
         redoStack = new Stack<>();
         selectedDate = getCurrentDate();
         tagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
-        loadToDoDiary(selectedDate);
-        loadTagList(selectedDate);
+        Log.d("diary", "initializeVariables: loadToDoDiary for " + selectedDate);
+        loadToDoDiary(selectedDate, new LoadToDoDiaryCallback() {
+            @Override
+            public void onLoadComplete() {
+                Log.d("diary", "initialization done");
+                isInitializationComplete = true;
+                updateToDoContainer();
+            }
+        });
     }
-
 
     private void setUpSingleRowCalendar() {
         calendar = Calendar.getInstance();
@@ -154,12 +158,18 @@ public class ToDoFragment extends Fragment {
         singleRowCalendar.setCalendarChangesObserver(new CalendarChangesObserver() {
             @Override
             public void whenSelectionChanged(boolean isSelected, int position, @NonNull Date date) {
-                Log.d("whenSelectionChanged", "Selection changed to " + position + " for " + date);
+                Log.d("diary", "Selection changed to " + position + " for " + date);
                 if (isSelected) {
-                    saveToDoDiary(selectedDate);
+                    if (isInitializationComplete) {
+                        saveToDoDiary(selectedDate);
+                    }
                     selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
-                    loadToDoDiary(selectedDate);
-                    loadTagList(selectedDate);
+                    loadToDoDiary(selectedDate, new LoadToDoDiaryCallback() {
+                        @Override
+                        public void onLoadComplete() {
+
+                        }
+                    });
                 }
                 if (isDiaryActive) {
                     activateDiary();
@@ -202,6 +212,12 @@ public class ToDoFragment extends Fragment {
                 ? today.get(Calendar.DAY_OF_MONTH)
                 : 1;
         calendar.set(Calendar.DAY_OF_MONTH, targetDate);
+        loadToDoDiary(selectedDate, new LoadToDoDiaryCallback() {
+            @Override
+            public void onLoadComplete() {
+
+            }
+        });
         singleRowCalendar.select(targetDate - 1);
         singleRowCalendar.scrollToPosition(targetDate - 1);
     }
@@ -236,7 +252,6 @@ public class ToDoFragment extends Fragment {
         singleRowCalendar.init();
         setInitialSelection();
         selectedDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.getTime());
-        loadToDoDiary(selectedDate);
     }
 
     private List<Date> getFutureDatesOfCurrentMonth() {
@@ -341,7 +356,6 @@ public class ToDoFragment extends Fragment {
         }
     }
 
-
     private void handleAutoCompleteFocusChange(AutoCompleteTextView autoCompleteTextView, ArrayAdapter<String> adapter, boolean hasFocus) {
         if (!hasFocus) {
             autoCompleteTextView.dismissDropDown();
@@ -412,11 +426,11 @@ public class ToDoFragment extends Fragment {
     }
 
     private void updateToDoContainer() {
-        Log.d("updateToDoContainer", "Update To-do container of " + selectedDate);
+        Log.d("todolist", "Update To-do container of " + selectedDate);
         todoContainer.removeAllViews();
         checkAndInitializeToDoList();
         if (toDoList.isEmpty()) {
-            Log.d("updateToDoContainer", "toDoList is Empty on " + selectedDate);
+            Log.d("todolist", "toDoList is Empty on " + selectedDate);
             emptyTextView.setVisibility(View.VISIBLE);
         } else {
             emptyTextView.setVisibility(View.GONE);
@@ -479,23 +493,18 @@ public class ToDoFragment extends Fragment {
         activeText.setOnClickListener(null);
     }
 
-    private void loadTagList(String date) {
-        tagViewModel.loadTags(date + "_diary").observe(getViewLifecycleOwner(), tagSet -> {
-            renewTagLayout(diaryTagContainer, date + "_diary");
-        });
-
-        checkAndInitializeToDoList();
-    }
-
-    private void loadToDoDiary(String date) {
+    private void loadToDoDiary(String date, LoadToDoDiaryCallback callback) {
         tagViewModel.loadToDoList(date).observe(getViewLifecycleOwner(), toDoItems -> {
             if (toDoItems != null) {
+                Log.d("todolist", "To-do list updated on ToDoFragment; " + toDoItems);
                 this.toDoList = new ArrayList<>(toDoItems);
             }
         });
 
         tagViewModel.loadDiaryContent(date).observe(getViewLifecycleOwner(), content -> {
+            Log.d("diary", "Loaded diary of " + date + " with content: " + content);
             diaryAutoCompleteTextView.setText(content != null ? content : "");
+            callback.onLoadComplete(); // Set flag here after loading content
         });
 
         tagViewModel.loadTags(date + "_diary").observe(getViewLifecycleOwner(), tags -> {
@@ -505,6 +514,8 @@ public class ToDoFragment extends Fragment {
     }
 
     private void saveToDoDiary(String date) {
+        Log.d("diary", "Save diary of " + date + " with content: " + diaryAutoCompleteTextView.getText().toString());
+        Log.d("diary", "Initialization is " + isInitializationComplete);
         String diaryIdentifier = date + "_diary";
         tagViewModel.saveDiaryContent(date, diaryAutoCompleteTextView.getText().toString());
         tagViewModel.saveTags(diaryIdentifier, new HashSet<>(tagViewModel.loadTags(diaryIdentifier).getValue()));
@@ -590,5 +601,9 @@ public class ToDoFragment extends Fragment {
 
     private void sortToDoList() {
         toDoList.sort((o1, o2) -> Boolean.compare(o1.isDone(), o2.isDone()));
+    }
+
+    private interface LoadToDoDiaryCallback {
+        void onLoadComplete();
     }
 }

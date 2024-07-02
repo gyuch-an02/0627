@@ -13,9 +13,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.DailyTag.R;
-import com.example.DailyTag.utils.TagManager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,13 +23,10 @@ import java.util.Set;
 public class GroupedPhotoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<PhotoItem> itemList;
     private final FragmentManager fragmentManager;
-    private final TagManager tagManager;
     private Map<String, Set<String>> photoTags;
 
     public GroupedPhotoAdapter(Map<String, List<String>> groupedPhotos, FragmentManager fragmentManager) {
         this.fragmentManager = fragmentManager;
-        this.tagManager = TagManager.getInstance();
-        updateData(groupedPhotos);
         updateData(groupedPhotos);
     }
 
@@ -83,9 +80,10 @@ public class GroupedPhotoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 photoViewHolder.imageView.setImageResource(R.drawable.placeholder_image); // replace with a placeholder image resource if needed
             }
 
+            Set<String> tags = photoTags.get(photoPath);
+
             photoViewHolder.imageView.setOnClickListener(v -> {
-                Set<String> tags = tagManager.getTags(photoPath);
-                ImageDialogFragment.newInstance(photoPath, tags)
+                ImageDialogFragment.newInstance(photoPath, tags != null ? tags : new HashSet<>())
                         .show(fragmentManager, "image_dialog");
             });
         }

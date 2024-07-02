@@ -36,6 +36,7 @@ public class ImageDialogFragment extends DialogFragment {
     private TagViewModel tagViewModel;
     private LinearLayout tagContainer;
     private String imagePath;
+    private String identifier;
 
     public static ImageDialogFragment newInstance(String imagePath, Set<String> tags) {
         ImageDialogFragment fragment = new ImageDialogFragment();
@@ -72,10 +73,12 @@ public class ImageDialogFragment extends DialogFragment {
 
             ArrayList<String> tags = getArguments().getStringArrayList(ARG_TAGS);
             tagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
-            tagViewModel.setTags(new HashSet<>(tags));
-            tagViewModel.getTagSet().observe(getViewLifecycleOwner(), tagSet -> {
-                TagUtils.renewTagLayout(getContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, "", v -> {
-                    tagViewModel.removeTag("", ((TextView) v.findViewById(R.id.tagTextView)).getText().toString());
+            identifier = "image_" + imageFile.getName(); // Unique identifier for the image tags
+
+            tagViewModel.loadTags(identifier).observe(getViewLifecycleOwner(), tagSet -> {
+                TagUtils.renewTagLayout(getContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, identifier, v -> {
+                    String tag = ((TextView) v.findViewById(R.id.tagTextView)).getText().toString();
+                    tagViewModel.removeTag(identifier, tag);
                 });
             });
         }

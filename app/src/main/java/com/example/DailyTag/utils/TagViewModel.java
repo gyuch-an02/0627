@@ -1,6 +1,8 @@
 package com.example.DailyTag.utils;
 
 import android.app.Application;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -61,12 +63,14 @@ public class TagViewModel extends AndroidViewModel {
 
     public LiveData<List<ToDoItem>> loadToDoList(String date) {
         MutableLiveData<List<ToDoItem>> toDoListLiveData = new MutableLiveData<>();
-        List<ToDoItem> toDoItems = tagRepository.loadToDoList(date);
-        toDoListLiveData.setValue(toDoItems);
+        List<ToDoItem> toDoList = tagRepository.loadToDoList(date);
+        toDoListLiveData.setValue(toDoList);
+        Log.d("todolist", "Loaded to-do list for " + date + "with: " + toDoList);
         return toDoListLiveData;
     }
 
     public void saveToDoList(String date, List<ToDoItem> toDoList) {
+        Log.d("todolist", "Saved to-do list for " + date + "with: " + toDoList);
         tagRepository.saveToDoList(date, toDoList);
         this.toDoList.setValue(toDoList); // Update the LiveData
     }
@@ -76,14 +80,18 @@ public class TagViewModel extends AndroidViewModel {
     }
 
     public LiveData<String> loadDiaryContent(String date) {
+        Log.d("TagViewModel", "loading diary content of " + date);
         MutableLiveData<String> diaryLiveData = new MutableLiveData<>();
         String diaryContent = tagRepository.loadDiaryContent(date);
         diaryLiveData.setValue(diaryContent);
+        Log.d("TagViewModel", "loaded content: " + diaryContent);
         return diaryLiveData;
     }
 
     public void saveDiaryContent(String date, String diaryContent) {
+        Log.d("TagViewModel", "saving diary content of " + date);
         tagRepository.saveDiaryContent(date, diaryContent);
         this.diaryContent.setValue(diaryContent); // Update the LiveData
+        Log.d("TagViewModel", "saved content: " + diaryContent);
     }
 }
