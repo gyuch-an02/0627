@@ -83,7 +83,7 @@ public class ImageDialogFragment extends DialogFragment {
 
             ArrayList<String> tags = getArguments().getStringArrayList(ARG_TAGS);
             tagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
-            identifier = "image_" + imageFile.getName(); // Unique identifier for the image tags
+            identifier = imageFile.getName() + "_image"; // Unique identifier for the image tags
 
             tagViewModel.loadTags(identifier).observe(getViewLifecycleOwner(), tagSet -> {
                 TagUtils.renewTagLayout(getContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, identifier, v -> {

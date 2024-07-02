@@ -84,7 +84,7 @@ public class ContactDetailsActivity extends AppCompatActivity {
                 Set<Tag> diaryTags = tagRepository.loadTags(date + "_diary");
 
                 for (Tag tag : diaryTags) {
-                    if (tag.getContactName().equals(contactName)) {
+                    if (tag.getContactId() == contactId) {
                         if (!entriesByDate.containsKey(date)) {
                             entriesByDate.put(date, new ArrayList<>());
                         }
@@ -94,10 +94,14 @@ public class ContactDetailsActivity extends AppCompatActivity {
                 }
             } else if (entry.getKey().endsWith("_todo")) {
                 String date = entry.getKey().substring(0, entry.getKey().indexOf('_'));
+                String identifier = entry.getKey();
+                int index = Integer.parseInt(identifier.substring(identifier.lastIndexOf('_', identifier.lastIndexOf('_') - 1) + 1, identifier.lastIndexOf('_')));
                 List<ToDoItem> todos = tagRepository.loadToDoList(date);
-                Set<Tag> todoTags = tagRepository.loadTags(entry.getKey());
 
-                for (ToDoItem todo : todos) {
+                if (index < todos.size()) {
+                    ToDoItem todo = todos.get(index);
+                    Set<Tag> todoTags = tagRepository.loadTags(identifier);
+
                     for (Tag tag : todoTags) {
                         if (tag.getContactId() == contactId && todo.getId().equals(tag.getTagName())) {
                             if (!entriesByDate.containsKey(date)) {
@@ -106,6 +110,20 @@ public class ContactDetailsActivity extends AppCompatActivity {
                             entriesByDate.get(date).add(new AbstractMap.SimpleEntry<>("To-Do", todo.getTask()));
                             break;
                         }
+                    }
+                }
+            } else if (entry.getKey().endsWith("_image")) {
+                String imageFileName = entry.getKey().substring(0, entry.getKey().indexOf('_'));
+                String imagePath = (String) entry.getValue();
+                Set<Tag> imageTags = tagRepository.loadTags(imageFileName + "_image");
+
+                for (Tag tag : imageTags) {
+                    if (tag.getContactId() == contactId) {
+                        if (!entriesByDate.containsKey(imageFileName)) {
+                            entriesByDate.put(imageFileName, new ArrayList<>());
+                        }
+                        entriesByDate.get(imageFileName).add(new AbstractMap.SimpleEntry<>("Image", imagePath));
+                        break;
                     }
                 }
             }

@@ -529,8 +529,10 @@ public class ToDoFragment extends Fragment {
         tagViewModel.saveTags(diaryIdentifier, new HashSet<>(tagViewModel.loadTags(diaryIdentifier).getValue()));
         tagViewModel.saveToDoList(date, toDoList);
 
-        for (ToDoItem item : toDoList) {
-            tagViewModel.saveTags(item.getId(), new HashSet<>(tagViewModel.loadTags(item.getId()).getValue()));
+        for (int i = 0; i < toDoList.size(); i++) {
+            ToDoItem toDoItem = toDoList.get(i);
+            String identifier = selectedDate + "_" + i + "_todo";
+            tagViewModel.saveTags(identifier, new HashSet<>(tagViewModel.loadTags(identifier).getValue()));
         }
     }
 
