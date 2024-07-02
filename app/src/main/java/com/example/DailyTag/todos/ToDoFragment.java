@@ -25,6 +25,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.DailyTag.R;
 import com.example.DailyTag.contacts.ContactManager;
+import com.example.DailyTag.utils.Tag;
 import com.example.DailyTag.utils.TagUtils;
 import com.example.DailyTag.utils.TagViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -41,6 +42,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -287,7 +289,7 @@ public class ToDoFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                //
+                saveToDoDiary(selectedDate);
             }
         };
 
@@ -341,16 +343,19 @@ public class ToDoFragment extends Fragment {
                 autoCompleteTextView.setSelection((textBefore + selectedTag).length());
                 autoCompleteTextView.addTextChangedListener(textWatcher);
 
+                long contactId = ContactManager.getContactIdByName(requireContext(), selectedTag);
+
                 if (isDiary) {
                     Log.d("handleAutoCompleteItemClick", "is Diary!!");
-                    tagViewModel.addTag(selectedDate + "_diary", selectedTag);
+                    tagViewModel.addTag(selectedDate + "_diary", new Tag(contactId, selectedTag, selectedTag));
                     TagUtils.renewTagLayout(requireContext(), getViewLifecycleOwner(), tagViewModel, diaryTagContainer, selectedDate + "_diary", v -> {
                         String tagToRemove = ((TextView) v.findViewById(R.id.tagTextView)).getText().toString();
-                        tagViewModel.removeTag(selectedDate + "_diary", tagToRemove);
+                        tagViewModel.removeTag(selectedDate + "_diary", new Tag(contactId, selectedTag, tagToRemove));
+                        renewTagLayout(diaryTagContainer, selectedDate + "_diary");
                     });
                     diaryTagContainer.setVisibility(View.VISIBLE);
                 } else if (toDoItem != null) {
-                    tagViewModel.addTag(toDoItem.getId(), selectedTag);
+                    tagViewModel.addTag(toDoItem.getId(), new Tag(contactId, selectedTag, selectedTag));
                 }
             }
         }
@@ -416,9 +421,9 @@ public class ToDoFragment extends Fragment {
     }
 
     private void renewTagLayout(LinearLayout tagContainer, String identifier) {
-        tagViewModel.getTagSet().observe(getViewLifecycleOwner(), tags -> {
+        tagViewModel.loadTags(identifier).observe(getViewLifecycleOwner(), tags -> {
             TagUtils.renewTagLayout(requireContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, identifier, v -> {
-                String tag = ((TextView) v.findViewById(R.id.tagTextView)).getText().toString();
+                Tag tag = (Tag) v.getTag();
                 tagViewModel.removeTag(identifier, tag);
                 renewTagLayout(tagContainer, identifier);
             });
@@ -434,7 +439,9 @@ public class ToDoFragment extends Fragment {
             emptyTextView.setVisibility(View.VISIBLE);
         } else {
             emptyTextView.setVisibility(View.GONE);
-            for (ToDoItem toDoItem : toDoList) {
+            for (int i = 0; i < toDoList.size(); i++) {
+                ToDoItem toDoItem = toDoList.get(i);
+                String identifier = selectedDate + "_" + i + "_todo"; // Unique identifier for each ToDoItem
                 View itemView = LayoutInflater.from(requireContext()).inflate(R.layout.item_todo, todoContainer, false);
                 TextView toDoTextView = itemView.findViewById(R.id.todoTextView);
                 CheckBox toDoCheckBox = itemView.findViewById(R.id.todoCheckBox);
@@ -443,7 +450,7 @@ public class ToDoFragment extends Fragment {
                 toDoTextView.setText(toDoItem.getTask());
                 toDoCheckBox.setChecked(toDoItem.isDone());
 
-                renewTagLayout(todoTagContainer, toDoItem.getId());
+                renewTagLayout(todoTagContainer, identifier);
 
                 toDoCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     toDoItem.setDone(isChecked);
@@ -451,7 +458,8 @@ public class ToDoFragment extends Fragment {
                     updateToDoContainer();
                 });
 
-                toDoTextView.setOnClickListener(v -> showModifyDeleteDialog(toDoList.indexOf(toDoItem)));
+                int finalI = i;
+                toDoTextView.setOnClickListener(v -> showModifyDeleteDialog(finalI));
                 todoContainer.addView(itemView);
             }
         }
@@ -508,7 +516,7 @@ public class ToDoFragment extends Fragment {
         });
 
         tagViewModel.loadTags(date + "_diary").observe(getViewLifecycleOwner(), tags -> {
-            tagViewModel.setTags(tags);  // Sync the tags
+            tagViewModel.setTags(tags); // Sync the tags
             renewTagLayout(diaryTagContainer, date + "_diary"); // Load tags for the diary
         });
     }
@@ -575,6 +583,7 @@ public class ToDoFragment extends Fragment {
         input.setThreshold(1);
 
         ToDoItem toDoItem = toDoList.get(position);
+        String identifier = selectedDate + "_" + position + "_todo"; // Unique identifier for each ToDoItem
         setupAutoCompleteTextView(input, contactNameAdapter, false, toDoItem);
         input.setText(toDoItem.getTask());
 
@@ -591,6 +600,7 @@ public class ToDoFragment extends Fragment {
 
         builder.setNegativeButton("Delete", (dialog, which) -> {
             toDoList.remove(position);
+            tagViewModel.removeTag(identifier, null); // Remove associated tags
             sortToDoList();
             updateToDoContainer();
         });

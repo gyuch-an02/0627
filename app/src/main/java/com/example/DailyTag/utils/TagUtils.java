@@ -1,9 +1,6 @@
 package com.example.DailyTag.utils;
 
 import android.content.Context;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -25,17 +22,16 @@ public class TagUtils {
         LayoutInflater inflater = LayoutInflater.from(context);
         int tagCount = 0;
         LinearLayout currentLine = createNewLine(context, tagContainer);
-        Log.d("renewTagLayout", "getTagSet: " + tagViewModel.getTagSet().getValue());
-        Log.d("renewTagLayout", "loadTags(" + identifier + "): " + tagViewModel.loadTags(identifier).getValue());
 
-        for (String tag : tagViewModel.loadTags(identifier).getValue()) {
+        for (Tag tag : tagViewModel.loadTags(identifier).getValue()) {
             if (tagCount == 3) {
                 currentLine = createNewLine(context, tagContainer);
                 tagCount = 0;
             }
             View tagView = inflater.inflate(R.layout.item_tag, currentLine, false);
             TextView tagTextView = tagView.findViewById(R.id.tagTextView);
-            tagTextView.setText(tag);
+            tagTextView.setText(tag.getContactName());
+            tagView.setTag(tag); // Store the tag object in the view
             currentLine.addView(tagView);
             tagView.findViewById(R.id.deleteButton).setOnClickListener(v -> {
                 tagViewModel.removeTag(identifier, tag);
@@ -70,7 +66,8 @@ public class TagUtils {
         addTagTextView.setOnItemClickListener((parent, view, position, id) -> {
             String selectedTag = adapter.getItem(position);
             if (selectedTag != null && !selectedTag.isEmpty()) {
-                tagViewModel.addTag(identifier, selectedTag);
+                long contactId = ContactManager.getContactIdByName(context, selectedTag);
+                tagViewModel.addTag(identifier, new Tag(contactId, selectedTag, identifier));
                 renewTagLayout(context, lifecycleOwner, tagViewModel, tagContainer, identifier, onClickListener);
             }
         });

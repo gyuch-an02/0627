@@ -8,11 +8,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.DailyTag.R;
+import com.example.DailyTag.utils.Tag;
+import com.example.DailyTag.utils.TagViewModel;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,11 +26,21 @@ import java.util.Set;
 public class GroupedPhotoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<PhotoItem> itemList;
     private final FragmentManager fragmentManager;
-    private Map<String, Set<String>> photoTags;
+    private Map<String, Set<Tag>> photoTags;
+    private long contactId;
+    private String contactName;
+    private TagViewModel tagViewModel;
 
-    public GroupedPhotoAdapter(Map<String, List<String>> groupedPhotos, FragmentManager fragmentManager) {
+    public GroupedPhotoAdapter(Map<String, List<String>> groupedPhotos, long contactId, String contactName, FragmentManager fragmentManager, TagViewModel tagViewModel) {
         this.fragmentManager = fragmentManager;
+        this.contactId = contactId;
+        this.contactName = contactName;
+        this.tagViewModel = tagViewModel;
         updateData(groupedPhotos);
+    }
+
+    public void setPhotoTags(Map<String, Set<Tag>> photoTags) {
+        this.photoTags = photoTags;
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -40,10 +53,6 @@ public class GroupedPhotoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
         }
         notifyDataSetChanged();
-    }
-
-    public void setPhotoTags(Map<String, Set<String>> photoTags) {
-        this.photoTags = photoTags;
     }
 
     @Override
@@ -80,10 +89,10 @@ public class GroupedPhotoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 photoViewHolder.imageView.setImageResource(R.drawable.placeholder_image); // replace with a placeholder image resource if needed
             }
 
-            Set<String> tags = photoTags.get(photoPath);
+            Set<Tag> tags = photoTags.get(photoPath);
 
             photoViewHolder.imageView.setOnClickListener(v -> {
-                ImageDialogFragment.newInstance(photoPath, tags != null ? tags : new HashSet<>())
+                ImageDialogFragment.newInstance(photoPath, contactId, contactName, tags != null ? tags : new HashSet<>())
                         .show(fragmentManager, "image_dialog");
             });
         }

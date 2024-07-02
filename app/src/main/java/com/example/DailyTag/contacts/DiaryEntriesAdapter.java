@@ -6,33 +6,32 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.DailyTag.R;
-import java.util.ArrayList;
-import java.util.HashMap;
+
 import java.util.List;
 import java.util.Map;
 
-public class DiaryEntriesAdapter extends RecyclerView.Adapter<DiaryEntriesAdapter.DiaryEntryViewHolder> {
+public class DiaryEntriesAdapter extends RecyclerView.Adapter<DiaryEntriesAdapter.DiaryViewHolder> {
 
-    private List<Map.Entry<String, String>> diaryEntries = new ArrayList<>();
+    private List<Map.Entry<String, String>> diaryEntries;
 
     @NonNull
     @Override
-    public DiaryEntryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.items_diary_entry, parent, false);
-        return new DiaryEntryViewHolder(view);
+    public DiaryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_diary_entry, parent, false);
+        return new DiaryViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull DiaryEntryViewHolder holder, int position) {
-        Map.Entry<String, String> diaryEntry = diaryEntries.get(position);
-        holder.diaryContentTextView.setText(diaryEntry.getValue());
-        holder.diaryDateTextView.setText(diaryEntry.getKey());
+    public void onBindViewHolder(@NonNull DiaryViewHolder holder, int position) {
+        Map.Entry<String, String> entry = diaryEntries.get(position);
+        holder.bind(entry);
     }
 
     @Override
     public int getItemCount() {
-        return diaryEntries.size();
+        return diaryEntries != null ? diaryEntries.size() : 0;
     }
 
     public void setDiaryEntries(List<Map.Entry<String, String>> diaryEntries) {
@@ -40,14 +39,19 @@ public class DiaryEntriesAdapter extends RecyclerView.Adapter<DiaryEntriesAdapte
         notifyDataSetChanged();
     }
 
-    static class DiaryEntryViewHolder extends RecyclerView.ViewHolder {
-        TextView diaryContentTextView;
-        TextView diaryDateTextView;
+    static class DiaryViewHolder extends RecyclerView.ViewHolder {
+        private final TextView diaryDateTextView;
+        private final TextView diaryContentTextView;
 
-        DiaryEntryViewHolder(@NonNull View itemView) {
+        public DiaryViewHolder(@NonNull View itemView) {
             super(itemView);
-            diaryContentTextView = itemView.findViewById(R.id.diaryEntryContentTextView);
-            diaryDateTextView = itemView.findViewById(R.id.diaryEntryDateTextView);
+            diaryDateTextView = itemView.findViewById(R.id.diaryDateTextView);
+            diaryContentTextView = itemView.findViewById(R.id.diaryContentTextView);
+        }
+
+        public void bind(Map.Entry<String, String> entry) {
+            diaryDateTextView.setText(entry.getKey());
+            diaryContentTextView.setText(entry.getValue());
         }
     }
 }

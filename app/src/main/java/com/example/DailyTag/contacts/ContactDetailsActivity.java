@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.DailyTag.R;
 import com.example.DailyTag.todos.ToDoItem;
+import com.example.DailyTag.utils.Tag;
 import com.example.DailyTag.utils.TagRepository;
 
 import java.util.*;
@@ -71,42 +72,42 @@ public class ContactDetailsActivity extends AppCompatActivity {
 
     private void loadEntries(Context context, String contactName) {
         TagRepository tagRepository = TagRepository.getInstance((Application) context.getApplicationContext());
-        Map<String, List<Map.Entry<String, String>>> entriesByDate = new TreeMap<>();
+        Map<String, List<Map.Entry<String, String>>> entriesByDate = new TreeMap<>(Collections.reverseOrder());
+        long contactId = ContactManager.getContactIdByName(context, contactName);
 
         // Load diary entries
-        Map<String, ?> allEntries = tagRepository.getAllEntries(); // Assuming this method exists to get all entries
-        Log.d("loadEntries","allEntries : "+  allEntries);
+        Map<String, ?> allEntries = tagRepository.getAllEntries();
         for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-            Log.d("loadEntries","entry.getKey() : "+entry.getKey());
-            Log.d("loadEntries", "entry.getValue :" + entry.getValue());
-            if (entry.getKey().endsWith("_diary")) { //다이어리 태그
+            if (entry.getKey().endsWith("_diary")) {
                 String date = entry.getKey().substring(0, entry.getKey().indexOf('_'));
                 String diaryContent = tagRepository.loadDiaryContent(date);
-                Set<String> diaryTags = tagRepository.loadTags(date + "_diary");
+                Set<Tag> diaryTags = tagRepository.loadTags(date + "_diary");
 
-                if (diaryTags.contains(contactName)) {
-                    if (!entriesByDate.containsKey(date)) {
-                        entriesByDate.put(date, new ArrayList<>());
+                for (Tag tag : diaryTags) {
+                    if (tag.getContactName().equals(contactName)) {
+                        if (!entriesByDate.containsKey(date)) {
+                            entriesByDate.put(date, new ArrayList<>());
+                        }
+                        entriesByDate.get(date).add(new AbstractMap.SimpleEntry<>("Diary", diaryContent));
+                        break;
                     }
-                    entriesByDate.get(date).add(new AbstractMap.SimpleEntry<>("Diary", diaryContent));
                 }
-            } else { //todo : 수정 필요
-//                Set<String> todoTags = tagRepository.loadTags(entry.getKey());
-//                for (String todoId : todoTags) {
-//                    if (todoTags.contains(contactName)) {
-//                        List<ToDoItem> todos = tagRepository.loadToDoList(date);
-//
-//                        for (ToDoItem todo : todos) {
-//                            if (todo.getId().equals(todoId)) {
-//                                if (!entriesByDate.containsKey(date)) {
-//                                    entriesByDate.put(date, new ArrayList<>());
-//                                }
-//                                entriesByDate.get(date).add(new AbstractMap.SimpleEntry<>("To-Do", todo.getTask()));
-//                            }
-//                        }
-//                    }
-//                }
+            } else if (entry.getKey().endsWith("_todo")) {
+                String date = entry.getKey().substring(0, entry.getKey().indexOf('_'));
+                List<ToDoItem> todos = tagRepository.loadToDoList(date);
+                Set<Tag> todoTags = tagRepository.loadTags(entry.getKey());
 
+                for (ToDoItem todo : todos) {
+                    for (Tag tag : todoTags) {
+                        if (tag.getContactId() == contactId && todo.getId().equals(tag.getTagName())) {
+                            if (!entriesByDate.containsKey(date)) {
+                                entriesByDate.put(date, new ArrayList<>());
+                            }
+                            entriesByDate.get(date).add(new AbstractMap.SimpleEntry<>("To-Do", todo.getTask()));
+                            break;
+                        }
+                    }
+                }
             }
         }
 

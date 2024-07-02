@@ -77,6 +77,48 @@ public class ContactManager {
         return null;
     }
 
+    public static long getContactIdByName(Context context, String contactName) {
+        long contactId = -1;
+        ContentResolver contentResolver = context.getContentResolver();
+        Cursor cursor = contentResolver.query(
+                ContactsContract.Contacts.CONTENT_URI,
+                new String[]{ContactsContract.Contacts._ID},
+                ContactsContract.Contacts.DISPLAY_NAME + " = ?",
+                new String[]{contactName},
+                null
+        );
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                @SuppressLint("Range") String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+                contactId = Long.parseLong(id);
+            }
+            cursor.close();
+        }
+        return contactId;
+    }
+
+    public static String getContactNameById(Context context, long contactId) {
+        String contactName = null;
+        ContentResolver contentResolver = context.getContentResolver();
+        Cursor cursor = contentResolver.query(
+                ContactsContract.Contacts.CONTENT_URI,
+                new String[]{ContactsContract.Contacts.DISPLAY_NAME},
+                ContactsContract.Contacts._ID + " = ?",
+                new String[]{String.valueOf(contactId)},
+                null
+        );
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                contactName = name;
+            }
+            cursor.close();
+        }
+        return contactName;
+    }
+
     public static String getInitialGroup(String name) {
         char firstChar = name.charAt(0);
         if (firstChar >= 0xAC00 && firstChar <= 0xD7A3) {

@@ -20,10 +20,13 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.DailyTag.R;
+import com.example.DailyTag.utils.Tag;
+import com.example.DailyTag.utils.TagViewModel;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,17 +46,22 @@ public class PhotosFragment extends Fragment {
     private static final int PERMISSION_REQUEST_CODE = 1;
     private GroupedPhotoAdapter groupedPhotoAdapter;
     private LinkedHashMap<String, List<String>> groupedPhotos;
-    private Map<String, Set<String>> photoTags; // Add a field for photo tags
+    private Map<String, Set<Tag>> photoTags; // Updated to use Tag class
     private Calendar startDate, endDate;
 
     private Button todayButton, last7DaysButton, last30DaysButton, allButton;
     private LinearLayout dateRangeLayout;
     private EditText startDateEditText, endDateEditText;
+    private long contactId = 1; // Replace with actual contactId
+    private String contactName = "SampleContact"; // Replace with actual contactName
+    private TagViewModel tagViewModel;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_photos, container, false);
+
+        tagViewModel = new ViewModelProvider(this).get(TagViewModel.class);
 
         RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
 
@@ -69,7 +77,7 @@ public class PhotosFragment extends Fragment {
 
         groupedPhotos = new LinkedHashMap<>();
         photoTags = new HashMap<>(); // Initialize the photo tags map
-        groupedPhotoAdapter = new GroupedPhotoAdapter(groupedPhotos, getChildFragmentManager());
+        groupedPhotoAdapter = new GroupedPhotoAdapter(groupedPhotos, contactId, contactName, getChildFragmentManager(), tagViewModel);
         groupedPhotoAdapter.setPhotoTags(photoTags); // Set photo tags
         recyclerView.setAdapter(groupedPhotoAdapter);
 
@@ -233,11 +241,12 @@ public class PhotosFragment extends Fragment {
                 }
                 groupedPhotos.get(date).add(photoPath);
 
-                // Adding dummy tags for demonstration purposes
-                Set<String> tags = new HashSet<>();
-                tags.add("SampleTag1");
-                tags.add("SampleTag2");
-                photoTags.put(photoPath, tags);
+                // Load tags from TagViewModel
+                tagViewModel.loadTags(photoPath).observe(getViewLifecycleOwner(), tags -> {
+                    if (tags != null) {
+                        photoTags.put(photoPath, new HashSet<>(tags));
+                    }
+                });
             }
             cursor.close();
         }
