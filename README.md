@@ -76,4 +76,4 @@ DailyTag는 태그를 통해 사람들과의 기록을 모아보고, 나의 하�
 
 ---
 
-https://github.com/gyuch-an02/madcamp2024S/assets/127263741/84524cc9-e8e6-48a9-b1b3-acd1077bc097
+[https://github.com/gyuch-an02/madcamp2024S/assets/127263741/84524cc9-e8e6-48a9-b1b3-acd1077bc097](https://github.com/gyuch-an02/madcamp2024S/assets/127263741/ed875464-6140-41dc-aff2-5bbdd911d3e3)
