@@ -1,6 +1,7 @@
 # DailyTag
 
-이미지 추가 
+![가로이미지](https://github.com/gyuch-an02/madcamp2024S/assets/146503043/f4157c68-f66e-4119-b741-56a5e4c59913)
+
 
 DailyTag는 
 
