@@ -75,3 +75,5 @@ DailyTag는 태그를 통해 사람들과의 기록을 모아보고, 나의 하�
 ### 시연 영상
 
 ---
+
+![dailyTag](https://github.com/gyuch-an02/madcamp2024S/assets/127263741/49437b3f-f5fd-47a8-bc7a-2ea9843cfed5)
