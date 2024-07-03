@@ -1,7 +1,6 @@
 package com.example.DailyTag.contacts;
 
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,11 +21,10 @@ import java.util.Objects;
 
 public class EntriesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private final List<EntryItem> entryItems = new ArrayList<>();
+    private List<EntryItem> entryItems = new ArrayList<>();
     private static final SimpleDateFormat DATE_PREV_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     private static final SimpleDateFormat DATE_CURR_FORMAT = new SimpleDateFormat("yyyy. M. d.", Locale.getDefault());
 
-    @SuppressLint("NotifyDataSetChanged")
     public void setEntries(Map<String, List<EntryItem>> entriesByDate) throws ParseException {
         entryItems.clear();
         for (Map.Entry<String, List<EntryItem>> entry : entriesByDate.entrySet()) {
@@ -35,20 +33,43 @@ public class EntriesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             String formattedDate = DATE_CURR_FORMAT.format(Objects.requireNonNull(DATE_PREV_FORMAT.parse(date)));
             // Add a date item
             entryItems.add(new EntryItem(EntryItem.TYPE_DATE, formattedDate, true));
-            boolean hasDiary = false;
-            boolean hasTodo = false;
+
+            List<EntryItem> images = new ArrayList<>();
+            List<EntryItem> diaries = new ArrayList<>();
+            List<EntryItem> todos = new ArrayList<>();
+
             for (EntryItem item : entry.getValue()) {
-                if (item.getType() == EntryItem.TYPE_DIARY && !hasDiary) {
+                if (item.getType() == EntryItem.TYPE_IMAGE) {
+                    images.add(item);
+                } else if (item.getType() == EntryItem.TYPE_DIARY) {
+                    diaries.add(item);
+                } else if (item.getType() == EntryItem.TYPE_TODO) {
+                    todos.add(item);
+                }
+            }
+
+            entryItems.addAll(images);
+
+            boolean hasDiary = false;
+            for (EntryItem diary : diaries) {
+                if (!hasDiary) {
                     // Add a header item for "Diary" before the first diary entry
                     entryItems.add(new EntryItem(EntryItem.TYPE_HEADER, "Diary", true));
                     hasDiary = true;
-                } else if (item.getType() == EntryItem.TYPE_TODO && !hasTodo) {
+                }
+                entryItems.add(diary);
+            }
+
+            boolean hasTodo = false;
+            for (EntryItem todo : todos) {
+                if (!hasTodo) {
                     // Add a header item for "To-do" before the first to-do entry
                     entryItems.add(new EntryItem(EntryItem.TYPE_HEADER, "To-do", true));
                     hasTodo = true;
                 }
-                entryItems.add(item);
+                entryItems.add(todo);
             }
+
             // Add a padding item at the bottom
             entryItems.add(new EntryItem(EntryItem.TYPE_PADDING, "", true));
         }
