@@ -24,18 +24,16 @@ import java.util.Map;
 import java.util.Set;
 
 public class GroupedPhotoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private List<PhotoItem> itemList;
     private final FragmentManager fragmentManager;
+    private List<PhotoItem> itemList;
     private Map<String, Set<Tag>> photoTags;
     private long contactId;
     private String contactName;
-    private TagViewModel tagViewModel;
 
     public GroupedPhotoAdapter(Map<String, List<String>> groupedPhotos, long contactId, String contactName, FragmentManager fragmentManager, TagViewModel tagViewModel) {
         this.fragmentManager = fragmentManager;
         this.contactId = contactId;
         this.contactName = contactName;
-        this.tagViewModel = tagViewModel;
         updateData(groupedPhotos);
     }
 
@@ -91,10 +89,8 @@ public class GroupedPhotoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             Set<Tag> tags = photoTags.get(photoPath);
 
-            photoViewHolder.imageView.setOnClickListener(v -> {
-                ImageDialogFragment.newInstance(photoPath, contactId, contactName, tags != null ? tags : new HashSet<>())
-                        .show(fragmentManager, "image_dialog");
-            });
+            photoViewHolder.imageView.setOnClickListener(v -> ImageDialogFragment.newInstance(photoPath, contactId, contactName, tags != null ? tags : new HashSet<>())
+                    .show(fragmentManager, "image_dialog"));
         }
     }
 

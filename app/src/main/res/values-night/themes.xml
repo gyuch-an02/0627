@@ -1,4 +1,5 @@
 <resources>
+
     <style name="Theme.DailyTag" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/color_1</item>
         <item name="colorPrimaryVariant">@color/color_2</item>
@@ -11,6 +12,12 @@
         <item name="android:textColorPrimary">@color/white</item>
         <item name="android:textColorSecondary">@color/inactive_text</item>
         <item name="android:windowBackground">@color/black</item>
+
+        <item name="android:textViewStyle">@style/customTextViewFontStyle</item>
+        <item name="android:buttonStyle">@style/customButtonFontStyle</item>
+        <item name="android:editTextStyle">@style/customEditTextFontStyle</item>
+        <item name="android:radioButtonStyle">@style/customRadioButtonFontStyle</item>
+        <item name="android:checkboxStyle">@style/customCheckboxFontStyle</item>
     </style>
 
     <style name="MonthPickerDialogStyle">

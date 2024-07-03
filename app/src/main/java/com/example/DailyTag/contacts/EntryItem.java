@@ -1,21 +1,24 @@
 package com.example.DailyTag.contacts;
 
-import android.media.Image;
-import android.widget.ImageView;
 import android.graphics.Bitmap;
 
 public class EntryItem {
     public static final int TYPE_DIARY = 0;
     public static final int TYPE_TODO = 1;
     public static final int TYPE_IMAGE = 2;
+    public static final int TYPE_HEADER = 3;
+    public static final int TYPE_DATE = 4;
+    public static final int TYPE_PADDING = 5;
 
     private final int type;
-    private String text;
+    private String date;
+    private String content;
     private Bitmap bitmap;
 
-    public EntryItem(int type, String text) {
+    // Constructor for diary, to-do, and image items
+    public EntryItem(int type, String content) {
         this.type = type;
-        this.text = text;
+        this.content = content;
     }
 
     public EntryItem(int type, Bitmap bitmap) {
@@ -23,12 +26,26 @@ public class EntryItem {
         this.bitmap = bitmap;
     }
 
+    // Constructor for header, date, and padding items
+    public EntryItem(int type, String content, boolean isHeaderOrDate) {
+        this.type = type;
+        this.content = content;
+    }
+
     public int getType() {
         return type;
     }
 
-    public String getText() {
-        return text;
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getContent() {
+        return content;
     }
 
     public Bitmap getBitmap() {

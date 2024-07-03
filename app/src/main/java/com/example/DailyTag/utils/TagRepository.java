@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashMap;
 
 public class TagRepository {
 
@@ -40,7 +39,8 @@ public class TagRepository {
         if (json.equalsIgnoreCase("")) {
             return new HashSet<>();
         }
-        Type type = new TypeToken<Set<Tag>>(){}.getType();
+        Type type = new TypeToken<Set<Tag>>() {
+        }.getType();
         return gson.fromJson(json, type);
     }
 
@@ -51,7 +51,8 @@ public class TagRepository {
 
     public List<ToDoItem> loadToDoList(String date) {
         String json = sharedPreferences.getString(date + "_todo", "");
-        List<ToDoItem> toDoItems = gson.fromJson(json, new TypeToken<List<ToDoItem>>() {}.getType());
+        List<ToDoItem> toDoItems = gson.fromJson(json, new TypeToken<List<ToDoItem>>() {
+        }.getType());
         return toDoItems != null ? toDoItems : new ArrayList<>();
     }
 

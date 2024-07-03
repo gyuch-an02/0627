@@ -81,7 +81,7 @@ public class TagUtils {
                 Tag tag = new Tag(contactId, selectedTag, identifier);
                 Set<Tag> currentTags = tagViewModel.loadTags(identifier).getValue();
                 if (currentTags != null && currentTags.contains(tag)) {
-                    Toast.makeText(context, "Tag already exists", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "태그가 이미 존재합니다.", Toast.LENGTH_SHORT).show();
                 } else {
                     tagViewModel.addTag(identifier, tag);
                     renewTagLayout(context, lifecycleOwner, tagViewModel, tagContainer, identifier, onClickListener);

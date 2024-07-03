@@ -1,10 +1,14 @@
 package com.example.DailyTag.contacts;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ContentProviderOperation;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -23,10 +27,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-import android.annotation.SuppressLint;
-import android.content.ContentUris;
-import android.content.ContentResolver;
-import android.database.Cursor;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -71,8 +71,8 @@ public class ContactActivity extends AppCompatActivity {
         profileImageView.setImageBitmap(getRoundedBitmap(defaultProfileImage));
 
         phoneEditText.addTextChangedListener(new TextWatcher() {
-            private boolean isFormatting;
             private final StringBuilder builder = new StringBuilder();
+            private boolean isFormatting;
 
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -129,7 +129,7 @@ public class ContactActivity extends AppCompatActivity {
                     }
                 }
             } else {
-                Toast.makeText(ContactActivity.this, "이름과 전화번호를 입력해주세요", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ContactActivity.this, "이름과 전화번호를 입력해주세요.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -184,11 +184,10 @@ public class ContactActivity extends AppCompatActivity {
 
         final Rect rect = new Rect(0, 0, width, height);
         final RectF rectF = new RectF(rect);
-        float roundPx = radius;
 
         canvas.drawARGB(0, 0, 0, 0);
         paint.setColor(0xFF000000);
-        canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+        canvas.drawRoundRect(rectF, (float) radius, (float) radius, paint);
 
         paint.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
         canvas.drawBitmap(bitmap, rect, rect, paint);
@@ -209,11 +208,11 @@ public class ContactActivity extends AppCompatActivity {
                     addContact(name, phone);
                 }
             } else {
-                Toast.makeText(this, "Contacts write permission denied", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "연락처 쓰기 권한이 없습니다.", Toast.LENGTH_SHORT).show();
             }
         } else if (requestCode == PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE) {
             if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "External storage read permission denied", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "저장소 읽기 권한이 없습니다.", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -318,7 +317,7 @@ public class ContactActivity extends AppCompatActivity {
             finish(); // Finish the activity
         } catch (RemoteException | OperationApplicationException e) {
             Log.e(TAG, "Error adding contact: " + e.getMessage(), e);
-            Toast.makeText(this, "Failed to add contact", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "연락처 추가에 실패하였습니다.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -384,12 +383,12 @@ public class ContactActivity extends AppCompatActivity {
 
         try {
             getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
-            Toast.makeText(this, "Contact updated", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "연락처가 업데이트되었습니다.", Toast.LENGTH_SHORT).show();
             setResult(RESULT_OK); // Indicate success
             finish();
         } catch (RemoteException | OperationApplicationException e) {
             e.printStackTrace();
-            Toast.makeText(this, "Error updating contact", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "업데이트 도중 오류가 발생하였습니다.", Toast.LENGTH_SHORT).show();
         }
     }
 

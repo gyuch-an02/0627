@@ -3,6 +3,7 @@
     android:id="@+id/dateTextView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/veryLightGray"
     android:padding="16dp"
     android:textSize="18sp"
-    android:textStyle="bold"/>
+    android:textStyle="bold" />

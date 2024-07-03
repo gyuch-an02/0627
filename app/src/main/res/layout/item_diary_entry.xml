@@ -1,23 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="8dp">
 
     <TextView
-        android:id="@+id/diaryDateTextView"
+        android:id="@+id/diaryTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textColor="@color/primaryTextColor" />
-
-    <TextView
-        android:id="@+id/diaryContentTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textColor="@color/inactive_text" />
-
+        android:text="@string/diary_content_label"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 </LinearLayout>

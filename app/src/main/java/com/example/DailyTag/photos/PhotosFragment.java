@@ -31,13 +31,13 @@ import com.example.DailyTag.utils.TagViewModel;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Calendar;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,7 +47,6 @@ public class PhotosFragment extends Fragment {
     private GroupedPhotoAdapter groupedPhotoAdapter;
     private LinkedHashMap<String, List<String>> groupedPhotos;
     private Map<String, Set<Tag>> photoTags; // Updated to use Tag class
-    private Calendar startDate, endDate;
 
     private Button todayButton, last7DaysButton, last30DaysButton, allButton;
     private LinearLayout dateRangeLayout;
@@ -55,6 +54,25 @@ public class PhotosFragment extends Fragment {
     private long contactId = 1; // Replace with actual contactId
     private String contactName = "SampleContact"; // Replace with actual contactName
     private TagViewModel tagViewModel;
+
+    public static String getImagePathByImageFileName(Context context, String imageFileName) {
+        String imagePath = null;
+
+        Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        String[] projection = {MediaStore.Images.Media.DATA};
+        String selection = MediaStore.Images.Media.DISPLAY_NAME + " = ?";
+        String[] selectionArgs = {imageFileName};
+
+        Cursor cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            imagePath = cursor.getString(columnIndex);
+            cursor.close();
+        }
+
+        return imagePath;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -195,9 +213,7 @@ public class PhotosFragment extends Fragment {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                     editText.setText(sdf.format(selectedDate.getTime()));
                     if (isStartDate) {
-                        startDate = selectedDate;
                     } else {
-                        endDate = selectedDate;
                     }
                 }, year, month, day);
         datePickerDialog.show();
@@ -254,25 +270,6 @@ public class PhotosFragment extends Fragment {
         groupedPhotoAdapter.setPhotoTags(photoTags); // Set photo tags in the adapter
     }
 
-    public static String getImagePathByImageFileName(Context context, String imageFileName) {
-        String imagePath = null;
-
-        Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = {MediaStore.Images.Media.DATA};
-        String selection = MediaStore.Images.Media.DISPLAY_NAME + " = ?";
-        String[] selectionArgs = {imageFileName};
-
-        Cursor cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-            int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            imagePath = cursor.getString(columnIndex);
-            cursor.close();
-        }
-
-        return imagePath;
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -280,7 +277,7 @@ public class PhotosFragment extends Fragment {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 loadPhotos();
             } else {
-                Toast.makeText(requireContext(), "Permission denied to read external storage", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "저장소 읽기 권한이 없습니다.", Toast.LENGTH_SHORT).show();
             }
         }
     }

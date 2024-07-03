@@ -1,15 +1,11 @@
 package com.example.DailyTag.contacts;
 
-import android.content.ContentUris;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.view.LayoutInflater;
@@ -26,6 +22,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 
 import com.example.DailyTag.R;
+import com.example.DailyTag.utils.ImageUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -39,9 +36,9 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
 
     private final Context context;
     private final List<Object> items;
+    private final ContactActionListener contactActionListener;
     private List<Object> filteredItems;
     private ContactFilter contactFilter;
-    private final ContactActionListener contactActionListener;
 
     public ContactsAdapter(Context context, List<Object> items, ContactActionListener contactActionListener) {
         this.context = context;
@@ -102,10 +99,10 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
 
             // Load profile image or set default
             if (contact.getProfileImage() != null) {
-                profileImageView.setImageBitmap(getRoundedBitmap(contact.getProfileImage()));
+                profileImageView.setImageBitmap(ImageUtils.getRoundedBitmap(contact.getProfileImage()));
             } else {
                 Bitmap defaultProfileImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_default_profile);
-                profileImageView.setImageBitmap(getRoundedBitmap(defaultProfileImage));
+                profileImageView.setImageBitmap(ImageUtils.getRoundedBitmap(defaultProfileImage));
             }
 
             convertView.setOnLongClickListener(v -> {
@@ -142,10 +139,10 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
 
     private void showDeleteConfirmationDialog(Contact contact) {
         new AlertDialog.Builder(context)
-                .setTitle("Delete Contact")
-                .setMessage("Are you sure you want to delete the contact: " + contact.getName() + "?")
-                .setPositiveButton("Yes", (dialog, which) -> deleteContact(contact))
-                .setNegativeButton("No", null)
+                .setTitle("연락처 삭제 확인")
+                .setMessage("정말 다음 연락처를 삭제하시겠습니까?\n  " + contact.getName())
+                .setPositiveButton("확인", (dialog, which) -> deleteContact(contact))
+                .setNegativeButton("취소", null)
                 .show();
     }
 
@@ -153,7 +150,7 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         ContentResolver contentResolver = context.getContentResolver();
         Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contact.getId());
         contentResolver.delete(contactUri, null, null);
-        Toast.makeText(context, "Contact deleted", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "연락처가 삭제되었습니다.", Toast.LENGTH_SHORT).show();
 
         // Remove contact and possibly the header
         String header = getHeaderForContact(contact);
@@ -181,36 +178,16 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
         return ContactManager.getInitialGroup(contact.getName());
     }
 
-    private Bitmap getRoundedBitmap(Bitmap bitmap) {
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-        int radius = Math.min(width, height) / 2;
-
-        Bitmap output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(output);
-
-        final Paint paint = new Paint();
-        paint.setAntiAlias(true);
-
-        final Rect rect = new Rect(0, 0, width, height);
-        final RectF rectF = new RectF(rect);
-
-        canvas.drawARGB(0, 0, 0, 0);
-        paint.setColor(0xFF000000);
-        canvas.drawRoundRect(rectF, (float) radius, (float) radius, paint);
-
-        paint.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
-        canvas.drawBitmap(bitmap, rect, rect, paint);
-
-        return output;
-    }
-
     @Override
     public Filter getFilter() {
         if (contactFilter == null) {
             contactFilter = new ContactFilter();
         }
         return contactFilter;
+    }
+
+    public interface ContactActionListener {
+        void onContactAction(Contact contact);
     }
 
     private class ContactFilter extends Filter {
@@ -258,9 +235,5 @@ public class ContactsAdapter extends BaseAdapter implements Filterable {
             filteredItems = (List<Object>) results.values;
             notifyDataSetChanged();
         }
-    }
-
-    public interface ContactActionListener {
-        void onContactAction(Contact contact);
     }
 }

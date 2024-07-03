@@ -9,10 +9,10 @@
         android:id="@+id/dialogTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/primaryTextColor"
         android:layout_gravity="center_horizontal"
-        android:paddingBottom="16dp"/>
+        android:paddingBottom="16dp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/primaryTextColor" />
 
     <com.example.DailyTag.todos.CustomAutoCompleteTextView
         android:id="@+id/todoAutoCompleteTextView"
@@ -20,6 +20,6 @@
         android:layout_height="wrap_content"
         android:hint="Enter your task"
         android:inputType="textMultiLine"
-        android:padding="8dp"/>
+        android:padding="8dp" />
 
 </LinearLayout>

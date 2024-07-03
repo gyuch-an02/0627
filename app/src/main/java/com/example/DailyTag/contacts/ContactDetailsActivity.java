@@ -10,19 +10,28 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.DailyTag.R;
 import com.example.DailyTag.todos.ToDoItem;
+import com.example.DailyTag.utils.ImageUtils;
 import com.example.DailyTag.utils.Tag;
 import com.example.DailyTag.utils.TagRepository;
 
-import java.io.File;
-import java.util.*;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 public class ContactDetailsActivity extends AppCompatActivity {
 
+    private TextView detailsTitle;
     private ImageView profileImageView;
     private TextView nameTextView;
     private TextView phoneTextView;
@@ -35,6 +44,7 @@ public class ContactDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_details);
 
+        detailsTitle = findViewById(R.id.detailsTitle);
         profileImageView = findViewById(R.id.profileImageView);
         nameTextView = findViewById(R.id.nameTextView);
         phoneTextView = findViewById(R.id.phoneTextView);
@@ -47,19 +57,21 @@ public class ContactDetailsActivity extends AppCompatActivity {
             loadContactDetails(contactId);
         }
 
-        // Set up RecyclerView
-        entriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
         // Initialize adapter
         entriesAdapter = new EntriesAdapter();
 
-        // Set adapter to RecyclerView
+        // Set up RecyclerView
+        entriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         entriesRecyclerView.setAdapter(entriesAdapter);
 
         // Load entries
         if (contactName != null) {
             Log.d("loadEntries", "Load entries for " + contactName);
-            loadEntries(this, contactId);
+            try {
+                loadEntries(this, contactId);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -69,14 +81,19 @@ public class ContactDetailsActivity extends AppCompatActivity {
 
         // Set the contact details in the views
         if (contact.getProfileImage() != null) {
-            profileImageView.setImageBitmap(contact.getProfileImage());
+            profileImageView.setImageBitmap(ImageUtils.getRoundedBitmap(contact.getProfileImage()));
+        } else {
+            Bitmap defaultProfileImage = BitmapFactory.decodeResource(getResources(), R.drawable.ic_default_profile);
+            profileImageView.setImageBitmap(ImageUtils.getRoundedBitmap(defaultProfileImage));
         }
+
         contactName = contact.getName(); // Store contact name
         nameTextView.setText(contact.getName());
         phoneTextView.setText(contact.getPhoneNumber());
+        detailsTitle.setText("DailyTag: @" + contactName); // Update the title with contact name
     }
 
-    private void loadEntries(Context context, long contactId) {
+    private void loadEntries(Context context, long contactId) throws ParseException {
         TagRepository tagRepository = TagRepository.getInstance((Application) context.getApplicationContext());
         Map<String, List<EntryItem>> entriesByDate = new TreeMap<>(Collections.reverseOrder());
 

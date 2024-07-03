@@ -10,16 +10,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/tag_background"
-        android:padding="8dp"
-        android:textColor="@android:color/white"
-        android:textColorHint="@android:color/white"
-        android:hint="@string/add_label"
-        android:text=""
         android:completionThreshold="1"
         android:dropDownAnchor="@+id/addTagTextView"
-        android:inputType="text"
-        android:dropDownHeight="500dp"
         android:dropDownWidth="match_parent"
+        android:dropDownHeight="500dp"
         android:dropDownVerticalOffset="-400dp"
-         />
+        android:hint="@string/add_label"
+        android:inputType="text"
+        android:padding="8dp"
+        android:text=""
+        android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white" />
 </LinearLayout>

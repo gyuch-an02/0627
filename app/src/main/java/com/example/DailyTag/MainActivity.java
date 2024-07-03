@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
                     tab.setText("사진");
                     break;
                 case 2:
-                    tab.setText("Todo");
+                    tab.setText("나의 하루");
                     break;
             }
         }).attach();
@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static class MyPagerAdapter extends FragmentStateAdapter {
-        private final String[] tabTitles = new String[]{"연락처", "사진", "Todo"};
+        private final String[] tabTitles = new String[]{"연락처", "사진", "나의 하루"};
 
         MyPagerAdapter(AppCompatActivity activity) {
             super(activity);

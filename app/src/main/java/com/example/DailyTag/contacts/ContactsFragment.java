@@ -2,7 +2,6 @@ package com.example.DailyTag.contacts;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -16,14 +15,13 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.appcompat.widget.SearchView;
 
 import com.example.DailyTag.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +30,8 @@ import java.util.TreeMap;
 
 public class ContactsFragment extends Fragment {
 
-    private ContactsAdapter adapter;
     private static final ArrayList<Object> contactsAndHeaders = new ArrayList<>();
-
+    private ContactsAdapter adapter;
     private ActivityResultLauncher<Intent> contactActivityLauncher;
     private ActivityResultLauncher<String> requestReadContactsPermissionLauncher;
 

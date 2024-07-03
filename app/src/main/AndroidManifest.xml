@@ -3,13 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- 연락처 읽기 권한 추가 -->
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <!-- 연락처 쓰기 권한 추가 -->
-    <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 
     <!-- 미디어 읽기 권한 추가 -->
     <!-- Devices running Android 12L (API level 32) or lower  -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <!-- Devices running Android 13 (API level 33) or higher -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
@@ -31,8 +33,8 @@
 
         <activity
             android:name=".SplashActivity"
-            android:windowSoftInputMode="stateHidden|adjustPan"
-            android:exported="true">
+            android:exported="true"
+            android:windowSoftInputMode="stateHidden|adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -41,12 +43,14 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:windowSoftInputMode="stateHidden|adjustPan"
-            android:exported="true">
+            android:exported="true"
+            android:windowSoftInputMode="stateHidden|adjustPan">
         </activity>
-        <activity android:name=".contacts.ContactActivity"
+        <activity
+            android:name=".contacts.ContactActivity"
             android:windowSoftInputMode="stateHidden|adjustPan" />
-        <activity android:name=".contacts.ContactDetailsActivity"
+        <activity
+            android:name=".contacts.ContactDetailsActivity"
             android:windowSoftInputMode="stateHidden|adjustPan" />
 
     </application>

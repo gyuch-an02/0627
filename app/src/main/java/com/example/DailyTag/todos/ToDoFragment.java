@@ -11,8 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,7 +42,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -102,8 +101,8 @@ public class ToDoFragment extends Fragment {
         monthYear = view.findViewById(R.id.month_year);
         diaryAutoCompleteTextView = view.findViewById(R.id.diaryAutoCompleteTextView);
         diaryTagContainer = view.findViewById(R.id.diaryTagContainer);
-        Button undoButton = view.findViewById(R.id.undoButton);
-        Button redoButton = view.findViewById(R.id.redoButton);
+        ImageButton undoButton = view.findViewById(R.id.undoButton);
+        ImageButton redoButton = view.findViewById(R.id.redoButton);
         undoRedoContainer = view.findViewById(R.id.undoredo);
         undoButton.setOnClickListener(v -> undoLastChange());
         redoButton.setOnClickListener(v -> redoLastChange());
@@ -238,7 +237,6 @@ public class ToDoFragment extends Fragment {
                 .setMinYear(1990)
                 .setActivatedYear(calendar.get(Calendar.YEAR))
                 .setMaxYear(2030)
-                .setTitle("Select Month and Year")
                 .build()
                 .show());
     }
@@ -298,7 +296,8 @@ public class ToDoFragment extends Fragment {
         autoCompleteTextView.setOnItemClickListener((parent, view, position, id) -> {
             String selectedTag = adapter.getItem(position);
             handleAutoCompleteItemClick(autoCompleteTextView, selectedTag, isDiary, toDoItem, pos);
-        });;
+        });
+
         autoCompleteTextView.setOnFocusChangeListener((v, hasFocus) -> handleAutoCompleteFocusChange(autoCompleteTextView, adapter, hasFocus));
     }
 
@@ -409,7 +408,7 @@ public class ToDoFragment extends Fragment {
             diaryAutoCompleteTextView.setSelection(lastState.length());
             diaryAutoCompleteTextView.addTextChangedListener(textWatcher);
         } else {
-            Toast.makeText(requireContext(), "No more changes to undo", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "더 이상 되돌릴 것이 없습니다.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -423,7 +422,7 @@ public class ToDoFragment extends Fragment {
             diaryAutoCompleteTextView.setSelection(lastState.length());
             diaryAutoCompleteTextView.addTextChangedListener(textWatcher);
         } else {
-            Toast.makeText(requireContext(), "No more changes to redo", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "더 이상 다시 실행할 것이 없습니다.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -539,7 +538,6 @@ public class ToDoFragment extends Fragment {
         tagViewModel.saveToDoList(date, toDoList);
 
         for (int i = 0; i < toDoList.size(); i++) {
-            ToDoItem toDoItem = toDoList.get(i);
             String identifier = selectedDate + "_" + i + "_todo_tag";
             tagViewModel.saveTags(identifier, new HashSet<>(tagViewModel.loadTags(identifier).getValue()));
         }
@@ -557,7 +555,7 @@ public class ToDoFragment extends Fragment {
 
     private void showAddToDoDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Add To-Do");
+        builder.setTitle("할일 추가");
 
         View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_todo, null);
         final CustomAutoCompleteTextView input = dialogView.findViewById(R.id.todoAutoCompleteTextView);
@@ -575,7 +573,7 @@ public class ToDoFragment extends Fragment {
                 sortToDoList();
                 updateToDoContainer();
             } else {
-                Toast.makeText(requireContext(), "Task cannot be empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "할일은 빈칸으로 둘 수 없습니다.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -585,7 +583,7 @@ public class ToDoFragment extends Fragment {
 
     private void showModifyDeleteDialog(int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Modify/Delete To-Do");
+        builder.setTitle("할일 수정/삭제");
 
         View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_todo, null);
         builder.setView(dialogView);
@@ -605,7 +603,7 @@ public class ToDoFragment extends Fragment {
                 sortToDoList();
                 updateToDoContainer();
             } else {
-                Toast.makeText(requireContext(), "Task cannot be empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "할일은 빈칸으로 둘 수 없습니다.", Toast.LENGTH_SHORT).show();
             }
         });
 

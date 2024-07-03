@@ -3,6 +3,7 @@
     android:id="@+id/headerTextView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/veryLightGray"
     android:padding="8dp"
     android:textColor="@android:color/darker_gray"
     android:textSize="18sp" />

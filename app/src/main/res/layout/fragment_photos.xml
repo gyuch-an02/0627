@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,10 +9,10 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -24,113 +23,113 @@
                 android:id="@+id/buttonLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:gravity="end"
+                android:orientation="horizontal"
                 android:padding="8dp">
 
                 <Button
                     android:id="@+id/todayButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="오늘"
-                    android:textSize="12sp"
-                    android:textColor="@android:color/black"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
                     android:background="@android:color/transparent"
-                    android:padding="0dp"
                     android:minWidth="0dp"
                     android:minHeight="0dp"
-                    android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"/>
+                    android:padding="0dp"
+                    android:text="오늘"
+                    android:textColor="@android:color/black"
+                    android:textSize="12sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="|"
-                    android:textColor="@android:color/black"
-                    android:gravity="center"
                     android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"/>
+                    android:layout_marginEnd="2dp"
+                    android:gravity="center"
+                    android:text="|"
+                    android:textColor="@android:color/black" />
 
                 <Button
                     android:id="@+id/last7DaysButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="7일"
-                    android:textSize="12sp"
-                    android:textColor="@android:color/black"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
                     android:background="@android:color/transparent"
-                    android:padding="0dp"
                     android:minWidth="0dp"
                     android:minHeight="0dp"
-                    android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"/>
+                    android:padding="0dp"
+                    android:text="7일"
+                    android:textColor="@android:color/black"
+                    android:textSize="12sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="|"
-                    android:textColor="@android:color/black"
-                    android:gravity="center"
                     android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"/>
+                    android:layout_marginEnd="2dp"
+                    android:gravity="center"
+                    android:text="|"
+                    android:textColor="@android:color/black" />
 
                 <Button
                     android:id="@+id/last30DaysButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="30일"
-                    android:textSize="12sp"
-                    android:textColor="@android:color/black"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
                     android:background="@android:color/transparent"
-                    android:padding="0dp"
                     android:minWidth="0dp"
                     android:minHeight="0dp"
-                    android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"/>
+                    android:padding="0dp"
+                    android:text="30일"
+                    android:textColor="@android:color/black"
+                    android:textSize="12sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="|"
-                    android:textColor="@android:color/black"
-                    android:gravity="center"
                     android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"/>
+                    android:layout_marginEnd="2dp"
+                    android:gravity="center"
+                    android:text="|"
+                    android:textColor="@android:color/black" />
 
                 <Button
                     android:id="@+id/allButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="전체"
-                    android:textSize="12sp"
-                    android:textColor="@android:color/black"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
                     android:background="@android:color/transparent"
-                    android:padding="0dp"
                     android:minWidth="0dp"
                     android:minHeight="0dp"
-                    android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"/>
+                    android:padding="0dp"
+                    android:text="전체"
+                    android:textColor="@android:color/black"
+                    android:textSize="12sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="|"
-                    android:textColor="@android:color/black"
-                    android:gravity="center"
                     android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"/>
+                    android:layout_marginEnd="2dp"
+                    android:gravity="center"
+                    android:text="|"
+                    android:textColor="@android:color/black" />
 
                 <ImageButton
                     android:id="@+id/searchButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="4dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/filter_by_date"
+                    android:padding="4dp"
                     android:src="@android:drawable/ic_menu_search"
-                    app:tint="@android:color/black"
-                    android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"/>
+                    app:tint="@android:color/black" />
             </LinearLayout>
 
             <LinearLayout
@@ -186,7 +185,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

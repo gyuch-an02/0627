@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -18,27 +18,25 @@
             <LinearLayout
                 android:id="@+id/month_year"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:layout_height="60dp"
+                android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:layout_marginBottom="8dp">
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/tv_month"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:fontFamily="@font/notosans"
-                    android:textStyle="bold"
-                    android:textSize="24sp" />
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tv_year"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/notosans"
-                    android:textStyle="bold"
-                    android:textSize="24sp" />
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <com.michalsvec.singlerowcalendar.calendar.SingleRowCalendar
@@ -48,88 +46,88 @@
                 android:layout_marginBottom="8dp"
                 app:deselection="false"
                 app:longPress="false"
-                app:multiSelection="false"/>
+                app:multiSelection="false" />
 
             <LinearLayout
                 android:id="@+id/toggleContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:layout_marginBottom="8dp">
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/text_todo"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:background="@drawable/toggle_background"
                     android:gravity="center"
-                    android:text="@string/todo_label"
-                    android:textSize="15sp"
                     android:padding="10dp"
-                    android:fontFamily="@font/notosans"
-                    android:textStyle="bold"
+                    android:text="@string/todo_label"
                     android:textColor="@color/active_text"
-                    android:background="@drawable/toggle_background"/>
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/text_diary"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:background="@drawable/toggle_background"
                     android:gravity="center"
-                    android:text="@string/diary_label"
-                    android:textSize="15sp"
                     android:padding="10dp"
-                    android:fontFamily="@font/notosans"
-                    android:textStyle="bold"
+                    android:text="@string/diary_label"
                     android:textColor="@color/inactive_text"
-                    android:background="@drawable/toggle_background"/>
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <TextView
                 android:id="@+id/emptyTextView"
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
+                android:layout_marginBottom="8dp"
                 android:gravity="center"
                 android:text="@string/empty_todo"
-                android:textColor="@color/primaryTextColor"
-                android:visibility="gone"
                 android:textAlignment="center"
-                android:layout_marginBottom="8dp"/>
+                android:textColor="@color/primaryTextColor"
+                android:visibility="gone" />
 
             <LinearLayout
                 android:id="@+id/todoContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"/>
+                android:orientation="vertical" />
 
             <LinearLayout
                 android:id="@+id/undoredo"
                 style="?android:attr/buttonBarStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="end"
+                android:gravity="center"
                 android:orientation="horizontal"
                 android:visibility="visible">
 
-                <Button
+                <ImageButton
                     android:id="@+id/undoButton"
                     style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:text="@string/undo_label"
+                    android:contentDescription="@string/undo_label"
+                    android:src="@drawable/baseline_undo_24"
                     android:visibility="visible" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/redoButton"
                     style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:text="@string/redo_label"
-                    android:visibility="visible"/>
+                    android:contentDescription="@string/redo_label"
+                    android:src="@drawable/baseline_redo_24"
+                    android:visibility="visible" />
 
             </LinearLayout>
 
@@ -138,14 +136,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:autofillHints="@string/diary_placeholder"
-                android:hint="@string/diary_placeholder"
                 android:completionThreshold="1"
+                android:dropDownWidth="match_parent"
+                android:dropDownHeight="200dp"
+                android:hint="@string/diary_placeholder"
                 android:inputType="textMultiLine"
                 android:minHeight="200dp"
                 android:padding="10dp"
-                android:visibility="gone"
-                android:dropDownHeight="200dp"
-                android:dropDownWidth="match_parent" />
+                android:visibility="gone" />
 
             <LinearLayout
                 android:id="@+id/diaryTagContainer"
@@ -153,7 +151,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="8dp"
-                android:visibility="gone"/>
+                android:visibility="gone" />
         </LinearLayout>
     </ScrollView>
 
@@ -164,5 +162,5 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:contentDescription="@string/todo_description"
-        android:src="@android:drawable/ic_input_add"/>
+        android:src="@android:drawable/ic_input_add" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

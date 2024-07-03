@@ -1,37 +1,72 @@
 package com.example.DailyTag.contacts;
 
+import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.DailyTag.R;
 
-import java.util.AbstractMap;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 public class EntriesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private Map<String, List<EntryItem>> entriesByDate;
-    private List<Map.Entry<String, EntryItem>> flattenedEntries;
 
-    public void setEntries(Map<String, List<EntryItem>> entriesByDate) {
-        this.entriesByDate = entriesByDate;
-        this.flattenedEntries = flattenEntries(entriesByDate);
+    private final List<EntryItem> entryItems = new ArrayList<>();
+    private static final SimpleDateFormat DATE_PREV_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    private static final SimpleDateFormat DATE_CURR_FORMAT = new SimpleDateFormat("yyyy. M. d.", Locale.getDefault());
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void setEntries(Map<String, List<EntryItem>> entriesByDate) throws ParseException {
+        entryItems.clear();
+        for (Map.Entry<String, List<EntryItem>> entry : entriesByDate.entrySet()) {
+            String date = entry.getKey();
+            // Format the date
+            String formattedDate = DATE_CURR_FORMAT.format(Objects.requireNonNull(DATE_PREV_FORMAT.parse(date)));
+            // Add a date item
+            entryItems.add(new EntryItem(EntryItem.TYPE_DATE, formattedDate, true));
+            boolean hasDiary = false;
+            boolean hasTodo = false;
+            for (EntryItem item : entry.getValue()) {
+                if (item.getType() == EntryItem.TYPE_DIARY && !hasDiary) {
+                    // Add a header item for "Diary" before the first diary entry
+                    entryItems.add(new EntryItem(EntryItem.TYPE_HEADER, "Diary", true));
+                    hasDiary = true;
+                } else if (item.getType() == EntryItem.TYPE_TODO && !hasTodo) {
+                    // Add a header item for "To-do" before the first to-do entry
+                    entryItems.add(new EntryItem(EntryItem.TYPE_HEADER, "To-do", true));
+                    hasTodo = true;
+                }
+                entryItems.add(item);
+            }
+            // Add a padding item at the bottom
+            entryItems.add(new EntryItem(EntryItem.TYPE_PADDING, "", true));
+        }
         notifyDataSetChanged();
     }
 
     @Override
     public int getItemViewType(int position) {
-        return flattenedEntries.get(position).getValue().getType();
+        return entryItems.get(position).getType();
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == EntryItem.TYPE_DIARY) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == EntryItem.TYPE_DATE) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_date_entry, parent, false);
+            return new DateViewHolder(view);
+        } else if (viewType == EntryItem.TYPE_DIARY) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_diary_entry, parent, false);
             return new DiaryViewHolder(view);
         } else if (viewType == EntryItem.TYPE_TODO) {
@@ -40,94 +75,131 @@ public class EntriesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         } else if (viewType == EntryItem.TYPE_IMAGE) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image_entry, parent, false);
             return new ImageViewHolder(view);
+        } else if (viewType == EntryItem.TYPE_HEADER) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_entry_header, parent, false);
+            return new HeaderViewHolder(view);
+        } else if (viewType == EntryItem.TYPE_PADDING) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_padding_entry, parent, false);
+            return new PaddingViewHolder(view);
+        } else {
+            throw new IllegalArgumentException("Invalid view type");
         }
-        return null;
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Map.Entry<String, EntryItem> itemEntry = flattenedEntries.get(position);
-        String date = itemEntry.getKey();
-        EntryItem item = itemEntry.getValue();
-
-        if (holder instanceof DiaryViewHolder) {
-            ((DiaryViewHolder) holder).bind(item.getText(), date);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        EntryItem entryItem = entryItems.get(position);
+        if (holder instanceof DateViewHolder) {
+            DateViewHolder dateViewHolder = (DateViewHolder) holder;
+            dateViewHolder.dateTextView.setText(entryItem.getContent());
+        } else if (holder instanceof DiaryViewHolder) {
+            DiaryViewHolder diaryViewHolder = (DiaryViewHolder) holder;
+            diaryViewHolder.diaryTextView.setText(entryItem.getContent());
         } else if (holder instanceof ToDoViewHolder) {
-            ((ToDoViewHolder) holder).bind(item.getText(), date);
-        }  else if (holder instanceof ImageViewHolder) {
-            ((ImageViewHolder) holder).bind(item.getBitmap(), date);
+            ToDoViewHolder toDoViewHolder = (ToDoViewHolder) holder;
+            toDoViewHolder.toDoTextView.setText(entryItem.getContent());
+        } else if (holder instanceof ImageViewHolder) {
+            ImageViewHolder imageViewHolder = (ImageViewHolder) holder;
+            imageViewHolder.imageView.setImageBitmap(entryItem.getBitmap());
+            // Set width to 50% of the parent width
+            ViewGroup.LayoutParams layoutParams = imageViewHolder.imageView.getLayoutParams();
+            layoutParams.width = (int) (imageViewHolder.itemView.getContext().getResources().getDisplayMetrics().widthPixels * 0.5);
+            imageViewHolder.imageView.setLayoutParams(layoutParams);
+            imageViewHolder.imageView.setAdjustViewBounds(true); // Adjust bounds to preserve aspect ratio
+
+            // Add click listener to magnify the image
+            imageViewHolder.imageView.setOnClickListener(new View.OnClickListener() {
+                private boolean isMagnified = false;
+
+                @Override
+                public void onClick(View v) {
+                    if (isMagnified) {
+                        // Shrink image
+                        ValueAnimator anim = ValueAnimator.ofInt(imageViewHolder.imageView.getMeasuredWidth(), (int) (imageViewHolder.itemView.getContext().getResources().getDisplayMetrics().widthPixels * 0.5));
+                        anim.addUpdateListener(valueAnimator -> {
+                            int val = (Integer) valueAnimator.getAnimatedValue();
+                            ViewGroup.LayoutParams layoutParams = imageViewHolder.imageView.getLayoutParams();
+                            layoutParams.width = val;
+                            imageViewHolder.imageView.setLayoutParams(layoutParams);
+                        });
+                        anim.setDuration(300);
+                        anim.start();
+                    } else {
+                        // Magnify image
+                        ValueAnimator anim = ValueAnimator.ofInt(imageViewHolder.imageView.getMeasuredWidth(), imageViewHolder.itemView.getContext().getResources().getDisplayMetrics().widthPixels);
+                        anim.addUpdateListener(valueAnimator -> {
+                            int val = (Integer) valueAnimator.getAnimatedValue();
+                            ViewGroup.LayoutParams layoutParams = imageViewHolder.imageView.getLayoutParams();
+                            layoutParams.width = val;
+                            imageViewHolder.imageView.setLayoutParams(layoutParams);
+                        });
+                        anim.setDuration(300);
+                        anim.start();
+                    }
+                    isMagnified = !isMagnified;
+                }
+            });
+        } else if (holder instanceof HeaderViewHolder) {
+            HeaderViewHolder headerViewHolder = (HeaderViewHolder) holder;
+            headerViewHolder.headerTextView.setText(entryItem.getContent());
+        } else if (holder instanceof PaddingViewHolder) {
+            // No additional binding needed for padding view holder
         }
     }
 
     @Override
     public int getItemCount() {
-        return flattenedEntries == null ? 0 : flattenedEntries.size();
+        return entryItems.size();
     }
 
-    private List<Map.Entry<String, EntryItem>> flattenEntries(Map<String, List<EntryItem>> map) {
-        List<Map.Entry<String, EntryItem>> flattenedList = new ArrayList<>();
-        for (Map.Entry<String, List<EntryItem>> entry : map.entrySet()) {
-            String date = entry.getKey();
-            for (EntryItem item : entry.getValue()) {
-                flattenedList.add(new AbstractMap.SimpleEntry<>(date, item));
-            }
+    static class DateViewHolder extends RecyclerView.ViewHolder {
+        TextView dateTextView;
+
+        public DateViewHolder(@NonNull View itemView) {
+            super(itemView);
+            dateTextView = itemView.findViewById(R.id.dateTextView);
         }
-        return flattenedList;
     }
 
     static class DiaryViewHolder extends RecyclerView.ViewHolder {
-        private TextView diaryContentTextView;
-        private TextView diaryDateTextView;
+        TextView diaryTextView;
 
-        public DiaryViewHolder(View itemView) {
+        public DiaryViewHolder(@NonNull View itemView) {
             super(itemView);
-            diaryContentTextView = itemView.findViewById(R.id.diaryContentTextView);
-            diaryDateTextView = itemView.findViewById(R.id.diaryDateTextView);
-        }
-
-        public void bind(String text, String date) {
-            String diaryText = "Diary: \n" + text;
-            diaryContentTextView.setText(diaryText);
-            diaryDateTextView.setText(date);
+            diaryTextView = itemView.findViewById(R.id.diaryTextView);
         }
     }
 
     static class ToDoViewHolder extends RecyclerView.ViewHolder {
-        private TextView toDoTextView;
-        private TextView toDoDateTextView;
+        TextView toDoTextView;
 
-        public ToDoViewHolder(View itemView) {
+        public ToDoViewHolder(@NonNull View itemView) {
             super(itemView);
-            toDoTextView = itemView.findViewById(R.id.todoContentTextView);
-            toDoDateTextView = itemView.findViewById(R.id.todoDateTextView);
-        }
-
-        public void bind(String text, String date) {
-            String toDoText = "To-do: \n" + text;
-            toDoTextView.setText(toDoText);
-            toDoDateTextView.setText(date);
+            toDoTextView = itemView.findViewById(R.id.toDoTextView);
         }
     }
 
     static class ImageViewHolder extends RecyclerView.ViewHolder {
-        private ImageView imageView;
-        private TextView imageDateTextView;
+        ImageView imageView;
 
-        public ImageViewHolder(View itemView) {
+        public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageView = itemView.findViewById(R.id.imageContentImageView);
-            imageDateTextView = itemView.findViewById(R.id.imageDateTextView);
-
-            // Adjust ImageView properties
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setAdjustViewBounds(true);
-            imageView.setPadding(0, 0, 0, 0);
-        }
-
-        public void bind(Bitmap bitmap, String date) {
-            imageView.setImageBitmap(bitmap);
-            imageDateTextView.setText(date);
+            imageView = itemView.findViewById(R.id.imageView);
         }
     }
 
+    static class HeaderViewHolder extends RecyclerView.ViewHolder {
+        TextView headerTextView;
+
+        public HeaderViewHolder(@NonNull View itemView) {
+            super(itemView);
+            headerTextView = itemView.findViewById(R.id.headerTextView);
+        }
+    }
+
+    static class PaddingViewHolder extends RecyclerView.ViewHolder {
+        public PaddingViewHolder(@NonNull View itemView) {
+            super(itemView);
+        }
+    }
 }
