@@ -22,9 +22,12 @@
         android:id="@+id/tagTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
+        android:maxWidth="60dp"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:padding="4dp"
         android:textColor="@android:color/white"
-        android:padding="4dp" />
+        android:textSize="14sp" />
 
     <ImageButton
         android:id="@+id/deleteButton"

@@ -139,9 +139,7 @@ public class ContactDetailsActivity extends AppCompatActivity {
 
                         if (imagePath != null) {
                             Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
-                            ImageView imageView = new ImageView(context);
-                            imageView.setImageBitmap(bitmap);
-                            entriesByDate.get(date).add(new EntryItem(EntryItem.TYPE_IMAGE, imageView));
+                            entriesByDate.get(date).add(new EntryItem(EntryItem.TYPE_IMAGE, bitmap));
                         }
                         break;
                     }

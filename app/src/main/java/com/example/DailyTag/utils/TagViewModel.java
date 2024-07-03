@@ -1,6 +1,8 @@
 package com.example.DailyTag.utils;
 
 import android.app.Application;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -46,10 +48,15 @@ public class TagViewModel extends AndroidViewModel {
     }
 
     public void addTag(String identifier, Tag tag) {
+        Log.d("tag", "Add tag " + tag + " with identifier " + identifier);
+        Log.d("tag", "Tag details: " + tag.getContactId() + tag.getContactName() + tag.getTagName());
         Set<Tag> tags = loadTags(identifier).getValue();
-        if (tags != null) {
+        if (tags == null)
+            tags = new HashSet<>();
+        if (!tags.contains(tag)) {
             tags.add(tag);
             tagRepository.saveTags(identifier, tags);
+            setTags(tags);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.example.DailyTag.contacts;
 
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,8 +38,8 @@ public class EntriesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_todo_entry, parent, false);
             return new ToDoViewHolder(view);
         } else if (viewType == EntryItem.TYPE_IMAGE) {
-            ImageView imageView = new ImageView(parent.getContext());
-            return new ImageViewHolder(imageView);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image_entry, parent, false);
+            return new ImageViewHolder(view);
         }
         return null;
     }
@@ -53,8 +54,8 @@ public class EntriesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             ((DiaryViewHolder) holder).bind(item.getText(), date);
         } else if (holder instanceof ToDoViewHolder) {
             ((ToDoViewHolder) holder).bind(item.getText(), date);
-        } else if (holder instanceof ImageViewHolder) {
-            ((ImageViewHolder) holder).bind(item.getImageView());
+        }  else if (holder instanceof ImageViewHolder) {
+            ((ImageViewHolder) holder).bind(item.getBitmap(), date);
         }
     }
 
@@ -80,12 +81,13 @@ public class EntriesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         public DiaryViewHolder(View itemView) {
             super(itemView);
-            diaryContentTextView = itemView.findViewById(R.id.diaryEntryContentTextView);
-            diaryDateTextView = itemView.findViewById(R.id.diaryEntryDateTextView);
+            diaryContentTextView = itemView.findViewById(R.id.diaryContentTextView);
+            diaryDateTextView = itemView.findViewById(R.id.diaryDateTextView);
         }
 
         public void bind(String text, String date) {
-            diaryContentTextView.setText(text);
+            String diaryText = "Diary: \n" + text;
+            diaryContentTextView.setText(diaryText);
             diaryDateTextView.setText(date);
         }
     }
@@ -96,26 +98,36 @@ public class EntriesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         public ToDoViewHolder(View itemView) {
             super(itemView);
-            toDoTextView = itemView.findViewById(R.id.todoTextView);
+            toDoTextView = itemView.findViewById(R.id.todoContentTextView);
             toDoDateTextView = itemView.findViewById(R.id.todoDateTextView);
         }
 
         public void bind(String text, String date) {
-            toDoTextView.setText(text);
+            String toDoText = "To-do: \n" + text;
+            toDoTextView.setText(toDoText);
             toDoDateTextView.setText(date);
         }
     }
 
     static class ImageViewHolder extends RecyclerView.ViewHolder {
         private ImageView imageView;
+        private TextView imageDateTextView;
 
-        public ImageViewHolder(ImageView view) {
-            super(view);
-            this.imageView = view;
+        public ImageViewHolder(View itemView) {
+            super(itemView);
+            imageView = itemView.findViewById(R.id.imageContentImageView);
+            imageDateTextView = itemView.findViewById(R.id.imageDateTextView);
+
+            // Adjust ImageView properties
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            imageView.setAdjustViewBounds(true);
+            imageView.setPadding(0, 0, 0, 0);
         }
 
-        public void bind(ImageView imageView) {
-            this.imageView.setImageDrawable(imageView.getDrawable());
+        public void bind(Bitmap bitmap, String date) {
+            imageView.setImageBitmap(bitmap);
+            imageDateTextView.setText(date);
         }
     }
+
 }

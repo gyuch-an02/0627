@@ -1,6 +1,8 @@
 package com.example.DailyTag.contacts;
 
+import android.media.Image;
 import android.widget.ImageView;
+import android.graphics.Bitmap;
 
 public class EntryItem {
     public static final int TYPE_DIARY = 0;
@@ -9,16 +11,16 @@ public class EntryItem {
 
     private final int type;
     private String text;
-    private ImageView imageView;
+    private Bitmap bitmap;
 
     public EntryItem(int type, String text) {
         this.type = type;
         this.text = text;
     }
 
-    public EntryItem(int type, ImageView imageView) {
+    public EntryItem(int type, Bitmap bitmap) {
         this.type = type;
-        this.imageView = imageView;
+        this.bitmap = bitmap;
     }
 
     public int getType() {
@@ -29,7 +31,7 @@ public class EntryItem {
         return text;
     }
 
-    public ImageView getImageView() {
-        return imageView;
+    public Bitmap getBitmap() {
+        return bitmap;
     }
 }

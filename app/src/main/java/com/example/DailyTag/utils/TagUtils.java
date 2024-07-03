@@ -1,16 +1,19 @@
 package com.example.DailyTag.utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.lifecycle.LifecycleOwner;
 
 import com.example.DailyTag.R;
+import com.example.DailyTag.contacts.ContactDetailsActivity;
 import com.example.DailyTag.contacts.ContactManager;
 
 import java.util.Set;
@@ -22,24 +25,32 @@ public class TagUtils {
         LayoutInflater inflater = LayoutInflater.from(context);
         int tagCount = 0;
         LinearLayout currentLine = createNewLine(context, tagContainer);
+        Set<Tag> tagList = tagViewModel.loadTags(identifier).getValue();
+        if (tagList != null) {
+            for (Tag tag : tagList) {
+                if (tagCount == 3) { // Limit tags per line
+                    currentLine = createNewLine(context, tagContainer);
+                    tagCount = 0;
+                }
+                View tagView = inflater.inflate(R.layout.item_tag, currentLine, false);
+                TextView tagTextView = tagView.findViewById(R.id.tagTextView);
+                tagTextView.setText(tag.getContactName());
+                tagView.setTag(tag); // Store the tag object in the view
+                currentLine.addView(tagView);
 
-        for (Tag tag : tagViewModel.loadTags(identifier).getValue()) {
-            if (tagCount == 3) {
-                currentLine = createNewLine(context, tagContainer);
-                tagCount = 0;
+                tagView.setOnClickListener(v -> {
+                    Intent intent = new Intent(context, ContactDetailsActivity.class);
+                    intent.putExtra("CONTACT_ID", tag.getContactId());
+                    context.startActivity(intent);
+                });
+
+                tagView.findViewById(R.id.deleteButton).setOnClickListener(v -> {
+                    tagViewModel.removeTag(identifier, tag);
+                    onClickListener.onClick(tagView);
+                });
+                tagCount++;
             }
-            View tagView = inflater.inflate(R.layout.item_tag, currentLine, false);
-            TextView tagTextView = tagView.findViewById(R.id.tagTextView);
-            tagTextView.setText(tag.getContactName());
-            tagView.setTag(tag); // Store the tag object in the view
-            currentLine.addView(tagView);
-            tagView.findViewById(R.id.deleteButton).setOnClickListener(v -> {
-                tagViewModel.removeTag(identifier, tag);
-                onClickListener.onClick(tagView);
-            });
-            tagCount++;
         }
-
         addAddTagButton(context, tagContainer, tagViewModel, identifier, onClickListener, lifecycleOwner);
     }
 
@@ -67,8 +78,14 @@ public class TagUtils {
             String selectedTag = adapter.getItem(position);
             if (selectedTag != null && !selectedTag.isEmpty()) {
                 long contactId = ContactManager.getContactIdByName(context, selectedTag);
-                tagViewModel.addTag(identifier, new Tag(contactId, selectedTag, identifier));
-                renewTagLayout(context, lifecycleOwner, tagViewModel, tagContainer, identifier, onClickListener);
+                Tag tag = new Tag(contactId, selectedTag, identifier);
+                Set<Tag> currentTags = tagViewModel.loadTags(identifier).getValue();
+                if (currentTags != null && currentTags.contains(tag)) {
+                    Toast.makeText(context, "Tag already exists", Toast.LENGTH_SHORT).show();
+                } else {
+                    tagViewModel.addTag(identifier, tag);
+                    renewTagLayout(context, lifecycleOwner, tagViewModel, tagContainer, identifier, onClickListener);
+                }
             }
         });
 

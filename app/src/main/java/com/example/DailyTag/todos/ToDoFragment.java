@@ -350,7 +350,7 @@ public class ToDoFragment extends Fragment {
 
                 if (isDiary) {
                     Log.d("handleAutoCompleteItemClick", "is Diary!!");
-                    tagViewModel.addTag(selectedDate + "_diary", new Tag(contactId, selectedTag, selectedTag));
+                    tagViewModel.addTag(selectedDate + "_diary", new Tag(contactId, selectedTag, selectedDate + "_diary"));
                     TagUtils.renewTagLayout(requireContext(), getViewLifecycleOwner(), tagViewModel, diaryTagContainer, selectedDate + "_diary", v -> {
                         String tagToRemove = ((TextView) v.findViewById(R.id.tagTextView)).getText().toString();
                         tagViewModel.removeTag(selectedDate + "_diary", new Tag(contactId, selectedTag, tagToRemove));
@@ -359,7 +359,10 @@ public class ToDoFragment extends Fragment {
                     diaryTagContainer.setVisibility(View.VISIBLE);
                 } else if (toDoItem != null) {
                     String todoIdentifier = selectedDate + "_" + position + "_todo_tag";
-                    tagViewModel.addTag(todoIdentifier, new Tag(contactId, selectedTag, selectedTag));
+                    Log.d("todotag", "Add tag on tagViewModel: " + selectedTag);
+                    tagViewModel.addTag(todoIdentifier, new Tag(contactId, selectedTag, todoIdentifier));
+                    Log.d("todotag", "Check if added: " + tagViewModel.getTagSet().getValue());
+                    updateToDoContainer();
                 }
             }
         }
@@ -426,6 +429,7 @@ public class ToDoFragment extends Fragment {
 
     private void renewTagLayout(LinearLayout tagContainer, String identifier) {
         tagViewModel.loadTags(identifier).observe(getViewLifecycleOwner(), tags -> {
+            Log.d("todotag", "" + tags);
             TagUtils.renewTagLayout(requireContext(), getViewLifecycleOwner(), tagViewModel, tagContainer, identifier, v -> {
                 Tag tag = (Tag) v.getTag();
                 tagViewModel.removeTag(identifier, tag);
@@ -435,17 +439,17 @@ public class ToDoFragment extends Fragment {
     }
 
     private void updateToDoContainer() {
-        Log.d("todolist", "Update To-do container of " + selectedDate);
+        Log.d("todotag", "Update To-do container of " + selectedDate);
         todoContainer.removeAllViews();
         checkAndInitializeToDoList();
         if (toDoList.isEmpty()) {
-            Log.d("todolist", "toDoList is Empty on " + selectedDate);
+            Log.d("todotag", "toDoList is Empty on " + selectedDate);
             emptyTextView.setVisibility(View.VISIBLE);
         } else {
             emptyTextView.setVisibility(View.GONE);
             for (int i = 0; i < toDoList.size(); i++) {
                 ToDoItem toDoItem = toDoList.get(i);
-                String identifier = selectedDate + "_" + i + " "; // Unique identifier for each ToDoItem
+                String identifier = selectedDate + "_" + i + "_todo_tag"; // Unique identifier for each ToDoItem
                 View itemView = LayoutInflater.from(requireContext()).inflate(R.layout.item_todo, todoContainer, false);
                 TextView toDoTextView = itemView.findViewById(R.id.todoTextView);
                 CheckBox toDoCheckBox = itemView.findViewById(R.id.todoCheckBox);
@@ -467,6 +471,7 @@ public class ToDoFragment extends Fragment {
                 todoContainer.addView(itemView);
             }
         }
+        saveToDoDiary(selectedDate);
     }
 
     private void setUpToggle() {
