@@ -10,9 +10,9 @@ DailyTag는
 
 ---
 
-하은수
+하은수 (숙명여대)
 
-안규찬
+안규찬 (KAIST)
 
 
 ### Tech Stack
