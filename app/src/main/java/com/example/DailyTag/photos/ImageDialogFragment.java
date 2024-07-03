@@ -62,7 +62,7 @@ public class ImageDialogFragment extends DialogFragment {
         ImageView imageView = view.findViewById(R.id.enlargedImageView);
         TextView imageNameTextView = view.findViewById(R.id.imageNameTextView);
         TextView imageDateTextView = view.findViewById(R.id.imageDateTextView);
-        tagContainer = view.findViewById(R.id.diaryTagContainer);
+        tagContainer = view.findViewById(R.id.imageTagContainer);
 
         if (getArguments() != null) {
             String imagePath = getArguments().getString(ARG_IMAGE_PATH);

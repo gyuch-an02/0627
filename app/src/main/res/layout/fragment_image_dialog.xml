@@ -33,7 +33,7 @@
         android:adjustViewBounds="true"
         android:contentDescription="@string/enlarged_image"
         android:scaleType="fitCenter"
-        app:layout_constraintBottom_toTopOf="@+id/diaryTagContainer"
+        app:layout_constraintBottom_toTopOf="@+id/imageTagContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_default="wrap"
         app:layout_constraintStart_toStartOf="parent"
@@ -41,7 +41,7 @@
         app:layout_constraintWidth_default="wrap" />
 
     <LinearLayout
-        android:id="@+id/diaryTagContainer"
+        android:id="@+id/imageTagContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"

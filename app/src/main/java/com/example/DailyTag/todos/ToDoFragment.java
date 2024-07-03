@@ -100,7 +100,7 @@ public class ToDoFragment extends Fragment {
         tvYear = view.findViewById(R.id.tv_year);
         monthYear = view.findViewById(R.id.month_year);
         diaryAutoCompleteTextView = view.findViewById(R.id.diaryAutoCompleteTextView);
-        diaryTagContainer = view.findViewById(R.id.diaryTagContainer);
+        diaryTagContainer = view.findViewById(R.id.imageTagContainer);
         ImageButton undoButton = view.findViewById(R.id.undoButton);
         ImageButton redoButton = view.findViewById(R.id.redoButton);
         undoRedoContainer = view.findViewById(R.id.undoredo);
