@@ -2,11 +2,11 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="active_text">#FF240750</color>
+    <color name="active_text">#FF344C64</color>
     <color name="inactive_text">#FF808080</color>
     <color name="color_1">#FF344C64</color>
-    <color name="color_2">#FF577B8D</color>
-    <color name="color_3">#FF57A6A1</color>
+    <color name="color_2">#FFFFFFFF</color>
+    <color name="color_3">#FF344C64</color>
     <color name="primaryTextColor">#FF000000</color>
     <color name="blue">#FF0000FF</color>
     <color name="veryLightGray">#f0f0f0</color>

@@ -2,12 +2,12 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="active_text">#FF78C1F3</color>
+    <color name="active_text">#FFFFFFFF</color>
     <color name="inactive_text">#FF808080</color>
-    <color name="color_1">#FF9BE8D8</color>
-    <color name="color_2">#FFE2F6CA</color>
-    <color name="color_3">#FFF8FDCF</color>
-    <color name="primaryTextColor">#FF240750</color>
+    <color name="color_1">#FF344C64</color>
+    <color name="color_2">#FF000000</color>
+    <color name="color_3">#FF344C64</color>
+    <color name="primaryTextColor">#FFFFFFFF</color>
     <color name="blue">#FF0000FF</color>
-    <color name="veryLightGray">#f0f0f0</color>
+    <color name="veryLightGray">#0f0f0f</color>
 </resources>
